@@ -1,0 +1,99 @@
+pragma language_version 0.23.0;
+
+import CompactStandardLibrary;
+
+// ZK Campus Vault - Privacy-first Identity & Credential Registry
+//
+// PRIVACY MODEL:
+//
+// 1. PUBLIC LEDGER STATE:
+//    - admin: Bytes<32> (The public key hash of the university administrator, authorized to issue credentials).
+//    - credential_hashes: Map<Bytes<32>, Boolean> (A map of valid/active certificate hashes to their validity status).
+//
+// 2. PRIVATE WITNESS DATA (kept off-chain by the student):
+//    - student_id: Uint<32> (Unique student ID number).
+//    - gpa: Uint<32> (Student's GPA scaled by 10, e.g. 38 for 3.8).
+//    - is_enrolled_num: Uint<32> (1 if enrolled, 0 otherwise).
+//    - salt: Field (Random salt to ensure hashes cannot be brute-forced).
+
+export ledger admin: Bytes<32>;
+export ledger credential_hashes: Map<Bytes<32>, Boolean>;
+
+// Constructor initializes the university admin's public key
+constructor(admin_pubkey: Bytes<32>) {
+  admin = admin_pubkey;
+}
+
+// Helper to derive admin public key from private secret key
+circuit derive_admin_pubkey(admin_sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([
+    pad(32, "zk-campus-vault:admin"),
+    admin_sk
+  ]);
+}
+
+// Circuit: University Administrator issues a credential
+// The admin provides the computed credential hash and proves their identity with their private secret key
+export circuit issue_credential(admin_sk: Bytes<32>, hash: Bytes<32>): [] {
+  // Verify administrator identity
+  const derived_pubkey = derive_admin_pubkey(admin_sk);
+  assert(derived_pubkey == admin, "Unauthorized: only university admin can register credentials");
+  
+  // Register the credential hash on the public ledger
+  credential_hashes.insert(disclose(hash), true);
+}
+
+// Circuit: Student proves they are currently enrolled without revealing their ID, GPA, or salt.
+// The student inputs their credentials privately as witnesses.
+export circuit prove_enrollment(
+  student_id: Uint<32>,
+  gpa: Uint<32>,
+  is_enrolled_num: Uint<32>,
+  salt: Field
+): [] {
+  // Enforce enrollment constraint
+  assert(is_enrolled_num == 1, "Student is not currently enrolled");
+  
+  // Re-compute credential hash in-circuit
+  const computed_hash = persistentHash<Vector<4, Field>>([
+    student_id as Field,
+    gpa as Field,
+    is_enrolled_num as Field,
+    salt
+  ]);
+  
+  // Verify the credential hash is active on the ledger
+  assert(credential_hashes.member(computed_hash), "No matching credential registered on-chain");
+  assert(credential_hashes.lookup(computed_hash) == true, "Credential has been revoked");
+  
+  // Disclose that enrollment verification passed
+  disclose(true);
+}
+
+// Circuit: Student proves their GPA meets or exceeds a specific threshold.
+// Discloses the public threshold and the confirmation that the student meets it.
+export circuit prove_gpa_threshold(
+  student_id: Uint<32>,
+  gpa: Uint<32>,
+  is_enrolled_num: Uint<32>,
+  salt: Field,
+  threshold: Uint<32>
+): [] {
+  // Enforce GPA constraint
+  assert(gpa >= threshold, "GPA is below the required threshold");
+  
+  // Re-compute credential hash in-circuit
+  const computed_hash = persistentHash<Vector<4, Field>>([
+    student_id as Field,
+    gpa as Field,
+    is_enrolled_num as Field,
+    salt
+  ]);
+  
+  // Verify the credential hash is active on the ledger
+  assert(credential_hashes.member(computed_hash), "No matching credential registered on-chain");
+  assert(credential_hashes.lookup(computed_hash) == true, "Credential has been revoked");
+  
+  // Disclose that GPA threshold verification passed
+  disclose(true);
+}

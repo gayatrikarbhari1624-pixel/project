@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  midnight-node:
+    image: midnightntwrk/midnight-node:1.0.0
+    container_name: campus-vault-node
+    ports:
+      - "9944:9944"
+    volumes:
+      - node-data:/data
+    command:
+      - --dev
+      - --ws-external
+      - --rpc-external
+      - --rpc-cors=all
+
+  proof-server:
+    image: midnightntwrk/proof-server:latest
+    container_name: campus-vault-proof-server
+    ports:
+      - "6300:6300"
+    environment:
+      - MIDNIGHT_NODE_URL=http://midnight-node:9944
+    volumes:
+      - proof-server-data:/data
+
+  indexer:
+    image: midnightntwrk/indexer-standalone:4.3.3
+    container_name: campus-vault-indexer
+    ports:
+      - "8089:8088"
+    environment:
+      - MIDNIGHT_NODE_URL=ws://midnight-node:9944
+    depends_on:
+      - midnight-node
+
+volumes:
+  node-data:
+  proof-server-data:
