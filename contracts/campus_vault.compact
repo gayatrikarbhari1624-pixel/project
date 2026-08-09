@@ -21,7 +21,7 @@ export ledger credential_hashes: Map<Bytes<32>, Boolean>;
 
 // Constructor initializes the university admin's public key
 constructor(admin_pubkey: Bytes<32>) {
-  admin = admin_pubkey;
+  admin = disclose(admin_pubkey);
 }
 
 // Helper to derive admin public key from private secret key
@@ -63,8 +63,8 @@ export circuit prove_enrollment(
   ]);
   
   // Verify the credential hash is active on the ledger
-  assert(credential_hashes.member(computed_hash), "No matching credential registered on-chain");
-  assert(credential_hashes.lookup(computed_hash) == true, "Credential has been revoked");
+  assert(credential_hashes.member(disclose(computed_hash)), "No matching credential registered on-chain");
+  assert(credential_hashes.lookup(disclose(computed_hash)) == true, "Credential has been revoked");
   
   // Disclose that enrollment verification passed
   disclose(true);
@@ -91,8 +91,8 @@ export circuit prove_gpa_threshold(
   ]);
   
   // Verify the credential hash is active on the ledger
-  assert(credential_hashes.member(computed_hash), "No matching credential registered on-chain");
-  assert(credential_hashes.lookup(computed_hash) == true, "Credential has been revoked");
+  assert(credential_hashes.member(disclose(computed_hash)), "No matching credential registered on-chain");
+  assert(credential_hashes.lookup(disclose(computed_hash)) == true, "Credential has been revoked");
   
   // Disclose that GPA threshold verification passed
   disclose(true);

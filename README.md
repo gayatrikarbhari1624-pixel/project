@@ -10,6 +10,17 @@ ZK Campus Vault eliminates fake degrees and protects student privacy using the *
 - **100% Privacy for Students**: Students generate ZK proofs locally on their device. No personal data is exposed.
 - **Instant Verification**: Employers can verify the cryptographic proofs instantly without ever seeing the student's actual marks or ID.
 
+## Screenshots & UI Flow
+
+### 1. 1AM Wallet Connected
+![1AM Wallet Connected](./screenshots/1am_wallet_connected.png)
+
+### 2. User Interface & Connected Console
+![User Interface Connected](./screenshots/ui_connected.png)
+
+### 3. Student Credentials Vault
+![Student Credentials Vault](./screenshots/student_vault.png)
+
 ## Prerequisites
 
 - Node.js (v22+)

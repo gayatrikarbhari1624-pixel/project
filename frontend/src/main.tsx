@@ -69,7 +69,12 @@ function App() {
       }
     } catch (err: any) {
       console.error("Wallet connection failed:", err);
-      alert(`Real wallet connection error: ${err?.message || 'Unknown error'}`);
+      const msg = err?.message || 'Unknown error';
+      if (msg.toLowerCase().includes('pending')) {
+        alert("✋ A connection request is already pending!\n\nPlease click the 1AM Wallet icon (🎯) in your browser toolbar and approve the connection request from ZK Campus Vault.");
+      } else {
+        alert(`Wallet connection error: ${msg}`);
+      }
     }
   };
 
