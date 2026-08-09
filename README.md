@@ -12,13 +12,7 @@ ZK Campus Vault eliminates fake degrees and protects student privacy using the *
 
 ## Screenshots & UI Flow
 
-### 1. 1AM Wallet Connected
-![1AM Wallet Connected](./screenshots/1am_wallet_connected.png)
-
-### 2. User Interface & Connected Console
-![User Interface Connected](./screenshots/ui_connected.png)
-
-### 3. Student Credentials Vault
+### Student Credentials Vault
 ![Student Credentials Vault](./screenshots/student_vault.png)
 
 ## Prerequisites
