@@ -60,3 +60,7 @@ temp/
 # Frontend build
 frontend/dist/
 frontend/node_modules/
+
+# Local databases
+midnight-level-db/
+

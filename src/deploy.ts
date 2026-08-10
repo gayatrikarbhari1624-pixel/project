@@ -238,8 +238,8 @@ async function main() {
   console.log('  Setting up providers...');
   const providers = await createProviders(walletCtx);
 
-  process.stdout.write('  Generating DUST...');
-  await new Promise((r) => setTimeout(r, 6000));
+  process.stdout.write('  Generating DUST (waiting 25s for block maturation)...');
+  await new Promise((r) => setTimeout(r, 25000));
   process.stdout.write(' done.\n');
 
   console.log('  Deploying contract...\n');
@@ -247,7 +247,7 @@ async function main() {
   // The campus_vault constructor takes an admin_pubkey: Bytes<32>.
   // We derive the admin public key from the deployer's seed for simplicity.
   // In production, this would be a separate admin key.
-  const adminSk = Buffer.from(SEED.slice(0, 64), 'hex');
+  const adminSk = Uint8Array.from(Buffer.from(SEED.slice(0, 64), 'hex'));
   // The admin public key will be derived inside the contract's constructor.
   // For now, pass the raw seed bytes as the admin_pubkey.
 
@@ -269,10 +269,13 @@ async function main() {
       const errCause = err?.cause?.message || err?.cause?.toString() || '';
       const fullError = `${errMsg} ${errCause}`;
 
+      // Custom error: 170 = InsufficientDust on Midnight devnet (Polkadot RPC code)
       const isDustShortage =
         fullError.includes('Not enough Dust') ||
         fullError.includes('Insufficient Funds') ||
-        fullError.includes('could not balance dust');
+        fullError.includes('could not balance dust') ||
+        fullError.includes('Custom error: 170') ||
+        fullError.includes('Transaction submission error');
 
       if (!(isDustShortage && attempt === 1)) {
         console.error(`\n  Attempt ${attempt} error: ${errMsg}`);

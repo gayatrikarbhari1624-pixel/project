@@ -15,6 +15,11 @@ ZK Campus Vault eliminates fake degrees and protects student privacy using the *
 ### Student Credentials Vault
 ![Student Credentials Vault](./screenshots/student_vault.png)
 
+## Deployed Smart Contract (Local Devnet)
+
+- **Contract Address**: `3df730f55ed9ed960581bd7afe1aa88edbcd60414d5474d67870d938bd7d99ef`
+- **Deployer Address**: `mn_addr_undeployed1h3ssm5ru2t6eqy4g3she78zlxn96e36ms6pq996aduvmateh9p9sk96u7s`
+
 ## Prerequisites
 
 - Node.js (v22+)
