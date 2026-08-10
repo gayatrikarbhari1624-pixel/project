@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Built for INTO the Midnight — SPPU Bootcamp (Rise In)
+ *  Theme: Aurora Mint & Deep Teal Glassmorphism
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const DEMO_STUDENTS = [
@@ -15,7 +15,6 @@ const DEMO_STUDENTS = [
 
 type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer';
 
-// Deployed contract info
 const DEPLOYED_CONTRACT = {
   address: "3df730f55ed9ed960581bd7afe1aa88edbcd60414d5474d67870d938bd7d99ef",
   network: "Local Devnet (undeployed)",
@@ -77,23 +76,22 @@ function App() {
       <header className="header">
         <div className="header-inner">
           <div className="flex-row">
-            <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', padding: 9, borderRadius: 12, display: 'flex', boxShadow: '0 0 20px rgba(99,102,241,0.45)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))', padding: 10, borderRadius: 14, display: 'flex', boxShadow: '0 0 25px rgba(20, 184, 166, 0.4)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
             </div>
             <div>
-              <h1 style={{ fontSize: '1.35rem', fontWeight: 800 }} className="gradient-text">ZK Campus Vault</h1>
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>Privacy-First Student Credentials on Midnight Network</p>
+              <h1 style={{ fontSize: '1.45rem', fontWeight: 800 }} className="gradient-text">ZK Campus Vault</h1>
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>On-Chain Student verification</p>
             </div>
-            <span className="badge sparkle-elem" style={{ marginLeft: 6 }}>🎓 Verified Contract Active</span>
           </div>
 
           <div className="flex-row">
             <nav className="nav">
               {([
-                ['how', '📖 Explainer'],
-                ['student', '🎓 Student Vault'],
+                ['how', '⚡ Dashboard'],
+                ['student', '🎓 Student Portal'],
                 ['university', '🏛️ University Portal'],
-                ['employer', '💼 Verifier'],
+                ['employer', '💼 Verification Console'],
                 ['explorer', '📊 Ledger Explorer'],
               ] as [Tab, string][]).map(([key, label]) => (
                 <button key={key} className={`nav-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
@@ -104,7 +102,7 @@ function App() {
             
             <button 
               className="btn btn-outline" 
-              style={{ marginLeft: '12px', borderColor: wallet ? 'rgba(16,185,129,0.5)' : 'var(--primary)', color: wallet ? '#6ee7b7' : 'var(--primary-light)' }}
+              style={{ marginLeft: '12px', borderColor: wallet ? 'var(--secondary)' : 'var(--primary)', color: wallet ? 'var(--mint)' : 'var(--primary-light)' }}
               onClick={connectWallet}
             >
               {wallet ? `✅ ${wallet}` : '👛 Connect Wallet'}
@@ -116,11 +114,11 @@ function App() {
       {/* Main Content */}
       <main className="main fade-in">
         {/* Banner with Active Contract Info */}
-        <div className="card" style={{ marginBottom: 24, padding: '12px 20px', background: 'rgba(99, 102, 241, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            ⛓️ <strong>Active Midnight Contract:</strong> <code style={{ color: 'var(--primary-light)', fontSize: '0.78rem' }}>{DEPLOYED_CONTRACT.address}</code>
+        <div className="card" style={{ marginBottom: 26, padding: '14px 24px', background: 'rgba(20, 184, 166, 0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, borderColor: 'var(--border)' }}>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            ⛓️ <strong>Active Midnight Contract:</strong> <code style={{ color: 'var(--primary-light)', fontSize: '0.8rem', background: 'rgba(0,0,0,0.3)', padding: '3px 8px', borderRadius: '6px' }}>{DEPLOYED_CONTRACT.address}</code>
           </div>
-          <span className="badge badge-green" style={{ fontSize: '0.68rem' }}>● Network: {DEPLOYED_CONTRACT.network}</span>
+          <span className="badge badge-green" style={{ fontSize: '0.7rem', padding: '4px 12px' }}>● Status: Active on {DEPLOYED_CONTRACT.network}</span>
         </div>
 
         {tab === 'how' && <HowItWorksTab onNavigate={setTab} />}
@@ -132,81 +130,87 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <strong>ZK Campus Vault</strong> • Built for INTO the Midnight SPPU Bootcamp (Rise In) • Powered by Midnight Compact ZK Contracts
+        <strong>ZK Campus Vault</strong> • Developed for INTO the Midnight Bootcamp • Cryptographically Verified Private Credentials
       </footer>
     </div>
   );
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 1: How It Works
+//  TAB 1: Dashboard / Explainer
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function HowItWorksTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
   return (
     <div className="flex-col fade-in">
-      {/* Hero Banner */}
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.12))', textAlign: 'center', padding: '54px 24px', border: '1px solid rgba(139, 92, 246, 0.25)' }}>
-        <div style={{ fontSize: '3.5rem', marginBottom: 14 }} className="sparkle-elem">🎓🛡️</div>
-        <h2 style={{ fontSize: '2.2rem', marginBottom: 10, fontWeight: 800 }} className="gradient-text">Zero-Knowledge Student Credentials</h2>
-        <p style={{ color: 'var(--text-muted)', maxWidth: 720, margin: '0 auto', lineHeight: 1.65, fontSize: '0.95rem' }}>
-          <strong>ZK Campus Vault</strong> eliminates fake credentials and protects student privacy using the <strong>Midnight blockchain</strong> and <strong>Zero-Knowledge Proofs (ZKPs)</strong>. 
-          Universities issue secure, tamper-proof commitments. Students prove their credentials instantly without sharing private database records.
-        </p>
-      </div>
-
-      {/* Problem & Solution Cards */}
-      <div className="grid-2">
-        <div className="card" style={{ borderColor: 'rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.02)' }}>
-          <h3 style={{ color: '#fda4af', marginBottom: 14, fontSize: '1.15rem' }}>❌ The Old Way (Web2 / Paper)</h3>
-          <ul style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.8, paddingLeft: 18 }}>
-            <li><strong>Forged degrees</strong> — Certificates are easily cloned or manipulated.</li>
-            <li><strong>No Privacy</strong> — You must send your entire marksheet to prove a single pass mark.</li>
-            <li><strong>Siloed Verification</strong> — Background checkers take weeks contacting university registers.</li>
-            <li><strong>Leaked Credentials</strong> — Data is kept forever in unsecured company databases.</li>
-          </ul>
-        </div>
-        <div className="card" style={{ borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.02)' }}>
-          <h3 style={{ color: '#6ee7b7', marginBottom: 14, fontSize: '1.15rem' }}>✨ The Midnight Way (ZK / Web3)</h3>
-          <ul style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.8, paddingLeft: 18 }}>
-            <li><strong>Cryptographically Secured</strong> — Commitments cannot be forged or tampered.</li>
-            <li><strong>100% Privacy</strong> — Prove GPA threshold (e.g. &gt; 3.50) without revealing your actual GPA.</li>
-            <li><strong>Instant Proofs</strong> — Zero-Knowledge verification completes in less than 1 second.</li>
-            <li><strong>Self-Owned</strong> — Student holds the data and credentials key in their own vault.</li>
-          </ul>
+      {/* Hero Welcome Panel */}
+      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))', padding: '60px 30px', border: '1px solid rgba(20, 184, 166, 0.25)', borderRadius: 24, position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <span className="badge" style={{ marginBottom: 12 }}>Version 1.0.0 Live</span>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: 14, fontWeight: 800 }} className="gradient-text">Privacy-First Verification</h2>
+            <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '1rem', marginBottom: 20 }}>
+              ZK Campus Vault eliminates degree fraud and identity leaks using Zero-Knowledge Proofs on the Midnight Network. We make it possible to prove qualifications instantly without sharing actual scores, roll numbers, or transcripts.
+            </p>
+            <div className="flex-row">
+              <button className="btn btn-primary" onClick={() => onNavigate('student')}>🎓 Access Student Vault</button>
+              <button className="btn btn-outline" onClick={() => onNavigate('employer')}>💼 Verify a Proof</button>
+            </div>
+          </div>
+          <div style={{ flex: '1 1 200px', display: 'flex', justifyContent: 'center' }}>
+            <div className="aurora-pulse" style={{ fontSize: '7rem', filter: 'drop-shadow(0 0 20px rgba(20,184,166,0.3))' }}>🛡️</div>
+          </div>
         </div>
       </div>
 
-      {/* Interactive Process steps */}
-      <h3 style={{ textAlign: 'center', fontSize: '1.4rem', color: 'var(--primary-light)', marginTop: 12 }}>Under the Hood Flow</h3>
+      {/* Stat Widgets */}
       <div className="grid-3">
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div className="step-circle" style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)', marginBottom: 14 }}>1</div>
-          <h4 style={{ marginBottom: 10, fontSize: '1.05rem' }}>🏛️ 1. Issue & Commit</h4>
+        <div className="card" style={{ background: 'rgba(14, 165, 233, 0.03)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 10 }}>🔒</div>
+          <h4 style={{ fontSize: '1.1rem', marginBottom: 8, color: 'var(--primary-light)' }}>100% Client-Side Privacy</h4>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            University hashes student details (Roll ID, GPA, Degree Code) with a secret salt into a <strong>32-byte cryptographic hash</strong>, saving it on the Midnight ledger.
+            ZK proofs are generated entirely inside your browser sandbox. Your personal identifiers never traverse the network.
           </p>
         </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div className="step-circle" style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', marginBottom: 14 }}>2</div>
-          <h4 style={{ marginBottom: 10, fontSize: '1.05rem' }}>🎓 2. Prove Locally</h4>
+        <div className="card" style={{ background: 'rgba(20, 184, 166, 0.03)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 10 }}>🏛️</div>
+          <h4 style={{ fontSize: '1.1rem', marginBottom: 8, color: 'var(--mint)' }}>On-Chain Commitment</h4>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Student runs a local ZK proof generation in their browser. It mathematically proves they possess a valid credential satisfying the criteria, without revealing the underlying numbers.
+            Credentials are committed onto the public ledger as 32-byte secure hashes, ensuring absolute immutability.
           </p>
         </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div className="step-circle" style={{ background: 'linear-gradient(135deg, #10b981, #059669)', marginBottom: 14 }}>3</div>
-          <h4 style={{ marginBottom: 10, fontSize: '1.05rem' }}>💼 3. Verify Instantly</h4>
+        <div className="card" style={{ background: 'rgba(16, 185, 129, 0.03)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 10 }}>⚡</div>
+          <h4 style={{ fontSize: '1.1rem', marginBottom: 8, color: 'var(--emerald)' }}>Sub-Second Auditing</h4>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            The verifier (employer) submits the ZK Proof to the Midnight ledger. Midnight checks the proof against the commitment on-chain. If it matches → Verification Successful!
+            Verification checks complete instantly. No manual registries or long background verification loops needed.
           </p>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 12 }}>
-        <button className="btn btn-primary" style={{ fontSize: '1rem', padding: '14px 36px' }} onClick={() => onNavigate('student')}>
-          🚀 Get Started — Generate ZK Proof
-        </button>
+      {/* Process Map */}
+      <div className="card" style={{ padding: 36 }}>
+        <h3 style={{ fontSize: '1.2rem', marginBottom: 20, textAlign: 'center' }} className="gradient-text">Interactive Credential Flow</h3>
+        <div className="grid-3" style={{ gap: 20 }}>
+          <div style={{ background: 'rgba(0,0,0,0.25)', padding: 20, borderRadius: 14, border: '1px solid rgba(255,255,255,0.03)' }}>
+            <h5 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Register / Mint</h5>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              University creates a hash commitments containing the student's Roll ID, GPA, and Degree Code, sending it to the Midnight node.
+            </p>
+          </div>
+          <div style={{ background: 'rgba(0,0,0,0.25)', padding: 20, borderRadius: 14, border: '1px solid rgba(255,255,255,0.03)' }}>
+            <h5 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. Formulate ZK Proof</h5>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Student selects target parameters (like GPA &gt;= 3.50) and computes a cryptographic proof on their device.
+            </p>
+          </div>
+          <div style={{ background: 'rgba(0,0,0,0.25)', padding: 20, borderRadius: 14, border: '1px solid rgba(255,255,255,0.03)' }}>
+            <h5 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Verify & Confirm</h5>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Employers evaluate the proof parameters on-ledger. Midnight validates without leaking any underlying score metadata.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -262,7 +266,7 @@ function StudentTab() {
 
   return (
     <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))' }}>
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))' }}>
         <h2 style={{ fontSize: '1.3rem', marginBottom: 6 }}>🎓 Student Identity Vault</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           Compute Zero-Knowledge proofs locally in your sandbox environment. Your actual marks, roll number, and personal details stay securely in your local vault.
@@ -305,10 +309,10 @@ function StudentTab() {
             <div style={{ marginBottom: 16 }}>
               <span className="label">Required Minimum GPA:</span>
               <div className="flex-row">
-                <input type="range" min="2.00" max="4.00" step="0.05" value={minGpa} onChange={e => setMinGpa(e.target.value)} style={{ flex: 1, accentColor: 'var(--primary)' }} />
-                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-light)', minWidth: 48 }}>{minGpa}</span>
+                <input type="range" min="2.00" max="4.00" step="0.05" value={minGpa} onChange={e => setMinGpa(e.target.value)} style={{ flex: 1, accentColor: 'var(--secondary)' }} />
+                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--mint)', minWidth: 48 }}>{minGpa}</span>
               </div>
-              <div style={{ marginTop: 10, padding: 10, borderRadius: 8, fontSize: '0.8rem', background: gpaPasses ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)', border: `1px solid ${gpaPasses ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)'}`, color: gpaPasses ? '#6ee7b7' : '#fda4af' }}>
+              <div style={{ marginTop: 10, padding: 10, borderRadius: 8, fontSize: '0.8rem', background: gpaPasses ? 'rgba(16,185,129,0.06)' : 'rgba(244,63,94,0.06)', border: `1px solid ${gpaPasses ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)'}`, color: gpaPasses ? '#34d399' : '#fda4af' }}>
                 {gpaPasses
                   ? <>✅ Proof can be computed: actual GPA ({s.gpa}) is above threshold.</>
                   : <>❌ Cannot generate valid proof: actual GPA ({s.gpa}) is below threshold.</>}
@@ -330,11 +334,11 @@ function StudentTab() {
       {/* Step Progress */}
       {generating && (
         <div className="card flex-row" style={{ justifyContent: 'space-around', background: 'rgba(0,0,0,0.2)' }}>
-          <div className="flex-row" style={{ opacity: step >= 1 ? 1 : 0.3 }}><div className="step-circle" style={{ background: '#6366f1' }}>1</div><span style={{ fontSize: '0.85rem' }}>Load Secrets</span></div>
+          <div className="flex-row" style={{ opacity: step >= 1 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--primary)' }}>1</div><span style={{ fontSize: '0.85rem' }}>Load Secrets</span></div>
           <span style={{ color: 'var(--text-dim)' }}>→</span>
-          <div className="flex-row" style={{ opacity: step >= 2 ? 1 : 0.3 }}><div className="step-circle" style={{ background: '#8b5cf6' }}>2</div><span style={{ fontSize: '0.85rem' }}>Run Prover Circuit</span></div>
+          <div className="flex-row" style={{ opacity: step >= 2 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--secondary)' }}>2</div><span style={{ fontSize: '0.85rem' }}>Run Prover Circuit</span></div>
           <span style={{ color: 'var(--text-dim)' }}>→</span>
-          <div className="flex-row" style={{ opacity: step >= 3 ? 1 : 0.3 }}><div className="step-circle" style={{ background: '#10b981' }}>3</div><span style={{ fontSize: '0.85rem' }}>Output ZK Proof JSON</span></div>
+          <div className="flex-row" style={{ opacity: step >= 3 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--emerald)' }}>3</div><span style={{ fontSize: '0.85rem' }}>Output ZK Proof JSON</span></div>
         </div>
       )}
 
@@ -342,7 +346,7 @@ function StudentTab() {
       {proof && (
         <div className="card" style={{ borderColor: proof.privacy.status === 'VALID' ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)' }}>
           <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-            <h4 style={{ color: proof.privacy.status === 'VALID' ? '#6ee7b7' : '#f43f5e' }}>
+            <h4 style={{ color: proof.privacy.status === 'VALID' ? '#34d399' : '#f43f5e' }}>
               {proof.privacy.status === 'VALID' ? '✅ ZK Proof Generated Successfully!' : '❌ ZK Proof Failed — Criteria Not Satisfied'}
             </h4>
             <button className="btn btn-outline" style={{ padding: '5px 12px', fontSize: '0.75rem' }} onClick={copy}>
@@ -378,7 +382,7 @@ function UniversityTab() {
 
   return (
     <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(99,102,241,0.1))' }}>
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))' }}>
         <h2 style={{ fontSize: '1.3rem', marginBottom: 6 }}>🏛️ University Issuer Portal</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           Mint credentials onto the Midnight Ledger. The raw data remains off-chain — only the commitments are published.
@@ -399,7 +403,7 @@ function UniversityTab() {
 
           {result && (
             <div style={{ marginTop: 16, padding: 14, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12 }}>
-              <h4 style={{ color: '#6ee7b7', fontSize: '0.9rem', marginBottom: 6 }}>✅ Credential Minted!</h4>
+              <h4 style={{ color: '#34d399', fontSize: '0.9rem', marginBottom: 6 }}>✅ Credential Minted!</h4>
               <span className="label">On-Chain Commitment Hash:</span>
               <div className="code-block" style={{ fontSize: '0.75rem' }}>{result}</div>
             </div>
@@ -410,13 +414,13 @@ function UniversityTab() {
           <h3 style={{ fontSize: '1rem', marginBottom: 12 }}>ℹ️ How does it work?</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong style={{ color: 'var(--cyan)' }}>Step 1:</strong> University takes student record and hashes it with a random secret salt.
+              <strong style={{ color: 'var(--primary-light)' }}>Step 1:</strong> University takes student record and hashes it with a random secret salt.
             </div>
             <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
               <strong style={{ color: 'var(--secondary)' }}>Step 2:</strong> Commitment is verified against constraints in the Compact circuit.
             </div>
             <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong style={{ color: 'var(--emerald)' }}>Step 3:</strong> The resulting 32-byte hash commitment is recorded on the public Midnight ledger.
+              <strong style={{ color: 'var(--mint)' }}>Step 3:</strong> The resulting 32-byte hash commitment is recorded on the public Midnight ledger.
             </div>
           </div>
         </div>
@@ -472,7 +476,7 @@ function EmployerTab() {
 
   return (
     <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.1))' }}>
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))' }}>
         <h2 style={{ fontSize: '1.3rem', marginBottom: 6 }}>💼 Verifier Sandbox</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           Employers can verify candidate-submitted ZK proofs directly. The system verifies proofs instantly against on-chain records.
@@ -483,7 +487,7 @@ function EmployerTab() {
         <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
           <h3 style={{ fontSize: '1rem' }}>🔍 Verify ZK Proof</h3>
           <div className="flex-row">
-            <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#6ee7b7' }}>Load Valid ZK Proof</button>
+            <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#34d399' }}>Load Valid ZK Proof</button>
             <button className="btn btn-outline" onClick={loadFake} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(244,63,94,0.4)', color: '#fda4af' }}>Load Fake ZK Proof</button>
           </div>
         </div>
@@ -497,7 +501,7 @@ function EmployerTab() {
 
         {result && (
           <div style={{ marginTop: 20, padding: 20, borderRadius: 14, background: result.valid ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)', border: `1px solid ${result.valid ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)'}` }}>
-            <h4 style={{ fontSize: '1.2rem', color: result.valid ? '#6ee7b7' : '#f43f5e', marginBottom: 8 }}>
+            <h4 style={{ fontSize: '1.2rem', color: result.valid ? '#34d399' : '#f43f5e', marginBottom: 8 }}>
               {result.valid ? '✅ ZK PROOF AUTHENTIC & VERIFIED' : '❌ ZK PROOF VERIFICATION FAILED'}
             </h4>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{result.statement}</p>
@@ -537,7 +541,7 @@ function ExplorerTab() {
               <span style={{ fontSize: '1.2rem' }}>{m.icon}</span>
             </div>
             <div style={{ fontSize: '1.65rem', fontWeight: 800 }} className="gradient-text">{m.value}</div>
-            <span style={{ fontSize: '0.72rem', color: '#6ee7b7' }}>{m.sub}</span>
+            <span style={{ fontSize: '0.72rem', color: '#34d399' }}>{m.sub}</span>
           </div>
         ))}
       </div>
@@ -548,7 +552,7 @@ function ExplorerTab() {
           {TXS.map((tx, i) => (
             <div key={i} className="flex-row" style={{ padding: '12px 18px', background: 'rgba(0,0,0,0.25)', borderRadius: 12, justifyContent: 'space-between', border: '1px solid var(--border)' }}>
               <div className="flex-row">
-                <span style={{ color: '#6ee7b7', fontWeight: 'bold' }}>✓</span>
+                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
                 <div>
                   <strong style={{ fontSize: '0.92rem' }}>{tx.type}</strong>
                   <span className="badge" style={{ marginLeft: 10 }}>{tx.circuit}</span>
