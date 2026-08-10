@@ -55,7 +55,7 @@ const witnesses = {
 };
 
 const compiledContract = CompiledContract.make('campus_vault', CampusVault.Contract).pipe(
-  CompiledContract.withWitnesses(witnesses),
+  CompiledContract.withWitnesses(witnesses as any),
   CompiledContract.withCompiledFileAssets(zkConfigPath),
 );
 
