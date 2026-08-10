@@ -17,7 +17,7 @@ type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer';
 
 const DEPLOYED_CONTRACT = {
   address: "3df730f55ed9ed960581bd7afe1aa88edbcd60414d5474d67870d938bd7d99ef",
-  network: "Local Devnet (undeployed)",
+  network: "Local Devnet",
   deployer: "mn_addr_undeployed1h3ssm5ru2t6eqy4g3she78zlxn96e36ms6pq996aduvmateh9p9sk96u7s"
 };
 
