@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Hybrid Wallet Connection
+ *  Theme: Sidebar SaaS Dashboard with Active Wallet Pop-ups
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -56,37 +56,36 @@ function App() {
   const connectWallet = async () => {
     try {
       // @ts-ignore
-      if (typeof window.midnight === 'undefined') {
-        // Fallback to Sandbox mode so the user is never blocked!
-        setIsSandboxWallet(true);
-        setWallet("mn_sandbox_wallet");
-        setScore(prev => prev + 50);
+      const midnight = window.midnight;
+      if (!midnight) {
+        alert("Midnight wallet extension not detected! Please install Lace (Preprod) or 1AM Wallet extension on this browser.");
         return;
       }
       
-      // Try to find any available provider under window.midnight
+      // Explicitly locate the mnLace or lace provider keys
       // @ts-ignore
-      const providers = Object.keys(window.midnight || {});
-      if (providers.length === 0) {
-        setIsSandboxWallet(true);
-        setWallet("mn_sandbox_wallet");
-        setScore(prev => prev + 50);
+      const provider = midnight.mnLace || midnight.lace;
+      if (!provider) {
+        // Fallback checks for other midnight extensions
+        const keys = Object.keys(midnight);
+        if (keys.length > 0) {
+          // @ts-ignore
+          const customProvider = midnight[keys[0]];
+          const api = await customProvider.enable();
+          const state = typeof api.state === 'function' ? await api.state() : api;
+          if (state && state.address) {
+            setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
+            setIsSandboxWallet(false);
+            setScore(prev => prev + 50);
+            return;
+          }
+        }
+        alert("Lace kiva 1AM Wallet browser connector सापडला नाही! Please extension check kara.");
         return;
       }
 
-      // Check if mnLace / lace exists, otherwise take first provider
-      const providerKey = providers.find(k => k.toLowerCase().includes('lace') || k.toLowerCase().includes('oneam') || k.toLowerCase().includes('1am')) || providers[0];
-      // @ts-ignore
-      const walletProvider = window.midnight[providerKey];
-      
-      if (!walletProvider) {
-        setIsSandboxWallet(true);
-        setWallet("mn_sandbox_wallet");
-        setScore(prev => prev + 50);
-        return;
-      }
-      
-      const api = await walletProvider.enable();
+      // Triggers the real Lace pop-up authorization!
+      const api = await provider.enable();
       const state = typeof api.state === 'function' ? await api.state() : api;
       
       if (state && state.address) {
@@ -98,11 +97,8 @@ function App() {
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
-      console.warn("Wallet popup initialization failed, falling back to sandbox connection:", err);
-      // Fallback on error
-      setIsSandboxWallet(true);
-      setWallet("mn_sandbox_wallet");
-      setScore(prev => prev + 50);
+      console.error("Lace popup enable failed:", err);
+      alert(`Wallet Popup Action failed: ${err.message || err}`);
     }
   };
 
@@ -136,7 +132,7 @@ function App() {
   const handleAddVerificationActivity = (circuitName: string, studentName: string, passed: boolean) => {
     const nextBlock = activities.length > 0 ? activities[0].block + 1 : 1025;
     setActivities(prev => [{
-      circuit: circuitName,
+      circuit: 'circuit_verify',
       type: `ZK Proof Verified (${studentName} - ${passed ? 'PASSED' : 'FAILED'})`,
       time: 'Just now',
       block: nextBlock,
