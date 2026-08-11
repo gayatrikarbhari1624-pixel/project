@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Lace Prioritization
+ *  Theme: Sidebar SaaS Dashboard with Dual Namespace Wallet Prover
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -55,19 +55,31 @@ function App() {
 
   const connectWallet = async () => {
     // @ts-ignore
-    const midnight = window.midnight;
-    if (!midnight) {
-      alert("Midnight wallet extension not detected! Please install Lace (Preprod) or 1AM Wallet extension on this browser.");
+    const midnight = window.midnight || {};
+    // @ts-ignore
+    const cardano = window.cardano || {};
+
+    if (Object.keys(midnight).length === 0 && Object.keys(cardano).length === 0) {
+      alert("Midnight/Cardano wallet extensions not detected! Please verify Lace kiva 1AM Wallet browser extension install ahe.");
       return;
     }
 
-    // Direct synchronous lookup prioritizing Lace Wallet APIs to bypass pop-up blockers!
-    // @ts-ignore
-    const provider = midnight.lace || midnight.mnLace || midnight['1am'] || midnight[Object.keys(midnight)[0]];
+    // Lookup Lace Wallet in both window.midnight AND window.cardano namespaces
+    const provider = 
+      midnight.lace || 
+      cardano.lace || 
+      midnight.mnLace || 
+      cardano.mnLace || 
+      midnight['1am'] || 
+      midnight[Object.keys(midnight)[0]] ||
+      cardano[Object.keys(cardano)[0]];
+
     if (!provider) {
-      alert("Lace Wallet kiva 1AM Wallet browser connector सापडला नाही!");
+      alert("Lace kiva 1AM Wallet browser connector provider सापडला नाही!");
       return;
     }
+
+    console.log("Resolving wallet connection via provider:", provider);
 
     try {
       let api;
@@ -96,7 +108,7 @@ function App() {
         setWallet(addr.substring(0, 8) + '...' + addr.substring(addr.length - 4));
         setIsSandboxWallet(false);
       } else {
-        setWallet("Connected (Lace)");
+        setWallet("Connected");
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
