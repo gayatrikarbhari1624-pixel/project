@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard (Aurora Teal & Mint)
+ *  Theme: Sidebar SaaS Dashboard with Gamified ZK Sandbox
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -35,7 +35,7 @@ const INITIAL_ACTIVITIES: Activity[] = [
   { circuit: 'prove_enrollment', type: 'ZK Proof Verified', time: '12 min ago', block: 1012 },
 ];
 
-type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer';
+type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer' | 'game';
 
 const DEPLOYED_CONTRACT = {
   address: "3df730f55ed9ed960581bd7afe1aa88edbcd60414d5474d67870d938bd7d99ef",
@@ -48,6 +48,9 @@ function App() {
   const [wallet, setWallet] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
+
+  // Gamification score
+  const [score, setScore] = useState<number>(0);
 
   const connectWallet = async () => {
     try {
@@ -75,6 +78,7 @@ function App() {
       const state = typeof api.state === 'function' ? await api.state() : api;
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
+        setScore(prev => prev + 50); // Bonus score for wallet connection!
       } else {
         setWallet("Connected");
       }
@@ -92,6 +96,7 @@ function App() {
       time: 'Just now',
       block: nextBlock
     }, ...prev]);
+    setScore(prev => prev + 100); // 100 points for minting!
   };
 
   const handleAddVerificationActivity = (circuitName: string, studentName: string, passed: boolean) => {
@@ -102,6 +107,7 @@ function App() {
       time: 'Just now',
       block: nextBlock
     }, ...prev]);
+    if (passed) setScore(prev => prev + 150); // 150 points for successful ZK proof generation!
   };
 
   return (
@@ -126,6 +132,7 @@ function App() {
               ['university', '🏛️ University Portal', '🏢'],
               ['employer', '💼 Verifier Console', '🔍'],
               ['explorer', '📊 Ledger Explorer', '📈'],
+              ['game', '🎮 ZK Cryptography Game', '🎯'],
             ] as [Tab, string, string][]).map(([key, label, emoji]) => (
               <button key={key} className={`sidebar-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
                 <span>{emoji}</span>
@@ -136,6 +143,12 @@ function App() {
         </div>
 
         <div className="sidebar-footer">
+          {/* Gamification stats */}
+          <div style={{ background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 8, textAlign: 'center' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>🏆 ZK Power Points</span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--mint)' }} className="sparkle-elem">{score} XP</div>
+          </div>
+
           <button 
             className="btn btn-outline" 
             style={{ width: '100%', borderColor: wallet ? 'var(--secondary)' : 'var(--primary)', color: wallet ? 'var(--mint)' : 'var(--primary-light)' }}
@@ -165,6 +178,7 @@ function App() {
           {tab === 'university' && <UniversityTab onMint={handleMintStudent} />}
           {tab === 'employer' && <EmployerTab />}
           {tab === 'explorer' && <ExplorerTab activities={activities} />}
+          {tab === 'game' && <ZkGameTab score={score} setScore={setScore} />}
         </main>
 
         <footer className="footer-bar">
@@ -192,7 +206,7 @@ function HowItWorksTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
             </p>
             <div className="flex-row">
               <button className="btn btn-primary" onClick={() => onNavigate('student')}>🎓 Access Student Vault</button>
-              <button className="btn btn-outline" onClick={() => onNavigate('employer')}>💼 Open Verifier Console</button>
+              <button className="btn btn-outline" onClick={() => onNavigate('game')}>🎮 Play ZK Game</button>
             </div>
           </div>
           <div style={{ flex: '1 1 180px', display: 'flex', justifyContent: 'center' }} className="aurora-pulse">
@@ -588,6 +602,147 @@ function ExplorerTab({ activities }: { activities: Activity[] }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TAB 6: Gamified ZK Quiz Game
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+interface ZkGameTabProps {
+  score: number;
+  setScore: React.Dispatch<React.SetStateAction<number>>;
+}
+
+function ZkGameTab({ score, setScore }: ZkGameTabProps) {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const QUESTIONS = [
+    {
+      q: "What does ZK (Zero-Knowledge) stand for in cryptography?",
+      options: [
+        "Proving a statement is true without revealing any secret data beyond the statement's truth.",
+        "A system that has zero database records saved.",
+        "Using public keys to encrypt files completely."
+      ],
+      correct: 0,
+      reward: 100
+    },
+    {
+      q: "Where does local witness generation run in the Midnight DApp model?",
+      options: [
+        "On the public Midnight blockchain consensus nodes.",
+        "Locally inside the user's browser/wallet client memory sandbox.",
+        "Inside the university database registries."
+      ],
+      correct: 1,
+      reward: 100
+    },
+    {
+      q: "What is committed on the Midnight ledger when issuing credentials?",
+      options: [
+        "A plaintext JSON containing Student name, GPA and Roll ID.",
+        "A 32-byte hash commitment concealing the private credentials record.",
+        "Nothing, everything is kept completely off-chain."
+      ],
+      correct: 1,
+      reward: 100
+    }
+  ];
+
+  const handleAnswer = (index: number) => {
+    setSelectedAnswer(index);
+    const q = QUESTIONS[currentQuestion];
+    if (index === q.correct) {
+      setFeedback(`🎉 Correct! You unlocked +${q.reward} ZK XP!`);
+      setScore(prev => prev + q.reward);
+    } else {
+      setFeedback("❌ Incorrect. Try reviewing Midnight documentation!");
+    }
+  };
+
+  const handleNext = () => {
+    setSelectedAnswer(null);
+    setFeedback(null);
+    if (currentQuestion + 1 < QUESTIONS.length) {
+      setCurrentQuestion(prev => prev + 1);
+    } else {
+      setQuizFinished(true);
+    }
+  };
+
+  const handleReset = () => {
+    setCurrentQuestion(0);
+    setSelectedAnswer(null);
+    setQuizFinished(false);
+    setFeedback(null);
+  };
+
+  return (
+    <div className="flex-col fade-in">
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))' }}>
+        <h2 style={{ fontSize: '1.3rem', marginBottom: 6 }}>🎮 ZK Cryptography Challenge Game</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          Answer correct answers to cryptography/Zero-Knowledge concepts and unlock high-level achievements!
+        </p>
+      </div>
+
+      <div className="card">
+        {!quizFinished ? (
+          <div>
+            <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
+              <span className="badge" style={{ background: 'var(--border)' }}>Question {currentQuestion + 1} of {QUESTIONS.length}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--mint)' }}>Reward: +100 XP</span>
+            </div>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: 20 }}>{QUESTIONS[currentQuestion].q}</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {QUESTIONS[currentQuestion].options.map((opt, i) => (
+                <button 
+                  key={i} 
+                  className={`btn btn-outline`} 
+                  style={{ 
+                    justifyContent: 'flex-start', 
+                    padding: '14px 20px', 
+                    fontSize: '0.9rem',
+                    textAlign: 'left',
+                    borderColor: selectedAnswer === i ? 'var(--secondary)' : 'rgba(255,255,255,0.06)'
+                  }}
+                  disabled={selectedAnswer !== null}
+                  onClick={() => handleAnswer(i)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+
+            {feedback && (
+              <div style={{ padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', marginBottom: 16, fontSize: '0.9rem' }}>
+                {feedback}
+              </div>
+            )}
+
+            {selectedAnswer !== null && (
+              <button className="btn btn-primary" onClick={handleNext} style={{ width: '100%', justifyContent: 'center' }}>
+                {currentQuestion + 1 === QUESTIONS.length ? 'Finish Quiz' : 'Next Question ➜'}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ fontSize: '3rem', marginBottom: 14 }}>🏆</div>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: 10 }}>ZK Cryptography Master unlocked!</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginBottom: 20 }}>
+              You successfully finished the challenge. Your active score: <strong style={{ color: 'var(--mint)' }}>{score} XP</strong>
+            </p>
+            <button className="btn btn-primary" onClick={handleReset}>Play Again</button>
+          </div>
+        )}
       </div>
     </div>
   );
