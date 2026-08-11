@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Synchronous Wallet Pop-ups
+ *  Theme: Sidebar SaaS Dashboard with Lace Prioritization
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -61,11 +61,11 @@ function App() {
       return;
     }
 
-    // Direct synchronous lookup to avoid user-gesture popup blocking!
+    // Direct synchronous lookup prioritizing Lace Wallet APIs to bypass pop-up blockers!
     // @ts-ignore
-    const provider = midnight['1am'] || midnight.mnLace || midnight.lace || midnight[Object.keys(midnight)[0]];
+    const provider = midnight.lace || midnight.mnLace || midnight['1am'] || midnight[Object.keys(midnight)[0]];
     if (!provider) {
-      alert("Lace kiva 1AM Wallet browser connector सापडला नाही!");
+      alert("Lace Wallet kiva 1AM Wallet browser connector सापडला नाही!");
       return;
     }
 
@@ -96,7 +96,7 @@ function App() {
         setWallet(addr.substring(0, 8) + '...' + addr.substring(addr.length - 4));
         setIsSandboxWallet(false);
       } else {
-        setWallet("Connected");
+        setWallet("Connected (Lace)");
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
