@@ -7,10 +7,32 @@ import './index.css';
  *  Theme: Aurora Mint & Deep Teal Glassmorphism
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-const DEMO_STUDENTS = [
-  { name: 'Alice Sharma', degree: 'B.Tech Computer Science', gpa: '3.85', id: '20249821', code: '101' },
-  { name: 'Rohan Patil', degree: 'M.Tech Data Science & AI', gpa: '3.92', id: '20249845', code: '102' },
-  { name: 'Priya Deshmukh', degree: 'B.Sc Information Technology', gpa: '3.40', id: '20249872', code: '103' },
+interface Student {
+  name: string;
+  degree: string;
+  gpa: string;
+  id: string;
+  code: string;
+  commitment?: string;
+}
+
+interface Activity {
+  circuit: string;
+  type: string;
+  time: string;
+  block: number;
+}
+
+const INITIAL_STUDENTS: Student[] = [
+  { name: 'Alice Sharma', degree: 'B.Tech Computer Science', gpa: '3.85', id: '20249821', code: '101', commitment: '0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e' },
+  { name: 'Rohan Patil', degree: 'M.Tech Data Science & AI', gpa: '3.92', id: '20249845', code: '102', commitment: '0x3cb411af09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f2b' },
+  { name: 'Priya Deshmukh', degree: 'B.Sc Information Technology', gpa: '3.40', id: '20249872', code: '103', commitment: '0x1a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e8f3c41' },
+];
+
+const INITIAL_ACTIVITIES: Activity[] = [
+  { circuit: 'issue_credential', type: 'Credential Issued', time: '1 min ago', block: 1024 },
+  { circuit: 'prove_gpa_threshold', type: 'ZK Proof Verified', time: '5 min ago', block: 1018 },
+  { circuit: 'prove_enrollment', type: 'ZK Proof Verified', time: '12 min ago', block: 1012 },
 ];
 
 type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer';
@@ -24,6 +46,10 @@ const DEPLOYED_CONTRACT = {
 function App() {
   const [tab, setTab] = useState<Tab>('how');
   const [wallet, setWallet] = useState<string | null>(null);
+  
+  // Dynamic application state
+  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
+  const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
 
   const connectWallet = async () => {
     try {
@@ -70,6 +96,29 @@ function App() {
     }
   };
 
+  const handleMintStudent = (newStudent: Student) => {
+    setStudents(prev => [newStudent, ...prev]);
+    const nextBlock = activities.length > 0 ? activities[0].block + 1 : 1025;
+    const newActivity: Activity = {
+      circuit: 'issue_credential',
+      type: `Credential Issued (${newStudent.name})`,
+      time: 'Just now',
+      block: nextBlock
+    };
+    setActivities(prev => [newActivity, ...prev]);
+  };
+
+  const handleAddVerificationActivity = (circuitName: string, studentName: string, passed: boolean) => {
+    const nextBlock = activities.length > 0 ? activities[0].block + 1 : 1025;
+    const newActivity: Activity = {
+      circuit: circuitName,
+      type: `ZK Proof Verified (${studentName} - ${passed ? 'PASSED' : 'FAILED'})`,
+      time: 'Just now',
+      block: nextBlock
+    };
+    setActivities(prev => [newActivity, ...prev]);
+  };
+
   return (
     <div className="app">
       {/* Header */}
@@ -89,7 +138,7 @@ function App() {
             <nav className="nav">
               {([
                 ['how', '⚡ Dashboard'],
-                ['student', '🎓 Student Portal'],
+                ['student', '🎓 Student Vault'],
                 ['university', '🏛️ University Portal'],
                 ['employer', '💼 Verification Console'],
                 ['explorer', '📊 Ledger Explorer'],
@@ -122,10 +171,10 @@ function App() {
         </div>
 
         {tab === 'how' && <HowItWorksTab onNavigate={setTab} />}
-        {tab === 'student' && <StudentTab />}
-        {tab === 'university' && <UniversityTab />}
+        {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
+        {tab === 'university' && <UniversityTab onMint={handleMintStudent} />}
         {tab === 'employer' && <EmployerTab />}
-        {tab === 'explorer' && <ExplorerTab />}
+        {tab === 'explorer' && <ExplorerTab activities={activities} />}
       </main>
 
       {/* Footer */}
@@ -220,7 +269,7 @@ function HowItWorksTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
 //  TAB 2: Student Vault
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function StudentTab() {
+function StudentTab({ students, onVerify }: { students: Student[], onVerify: (circuit: string, name: string, passed: boolean) => void }) {
   const [preset, setPreset] = useState(0);
   const [proofType, setProofType] = useState<'gpa' | 'enrollment'>('gpa');
   const [minGpa, setMinGpa] = useState('3.50');
@@ -229,7 +278,7 @@ function StudentTab() {
   const [proof, setProof] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
-  const s = DEMO_STUDENTS[preset];
+  const s = students[preset] || students[0];
   const gpaPasses = parseFloat(s.gpa) >= parseFloat(minGpa);
 
   const generate = () => {
@@ -237,13 +286,13 @@ function StudentTab() {
     setTimeout(() => { setStep(2);
       setTimeout(() => { setStep(3);
         setTimeout(() => {
-          setProof({
+          const finalProof = {
             circuit: proofType === 'gpa' ? 'prove_gpa_threshold' : 'prove_enrollment',
             contract: 'campus_vault.compact',
             statement: proofType === 'gpa' ? `GPA >= ${minGpa}` : 'Active enrolled student status confirmed',
             public_inputs: { 
               min_gpa_x100: Math.round(parseFloat(minGpa) * 100), 
-              commitment: '0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e' 
+              commitment: s.commitment || '0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e' 
             },
             proof_data: "0x25a9f3b8c8d...ff930b5e28a",
             privacy: { 
@@ -252,8 +301,10 @@ function StudentTab() {
               status: gpaPasses ? 'VALID' : 'FAILED' 
             },
             timestamp: new Date().toISOString()
-          });
+          };
+          setProof(finalProof);
           setGenerating(false);
+          onVerify(finalProof.circuit, s.name, gpaPasses);
         }, 500);
       }, 500);
     }, 500);
@@ -275,7 +326,7 @@ function StudentTab() {
 
       <div className="flex-row">
         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Switch Active Student Profile:</span>
-        {DEMO_STUDENTS.map((st, i) => (
+        {students.map((st, i) => (
           <button key={i} className={`btn btn-outline ${preset === i ? 'active' : ''}`} style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={() => { setPreset(i); setProof(null); }}>
             {st.name} ({st.gpa} GPA)
           </button>
@@ -364,10 +415,16 @@ function StudentTab() {
 //  TAB 3: University Issuer
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function UniversityTab() {
-  const [sid, setSid] = useState('20249821');
-  const [code, setCode] = useState('101');
-  const [gpa, setGpa] = useState('3.85');
+interface UniversityTabProps {
+  onMint: (s: Student) => void;
+}
+
+function UniversityTab({ onMint }: UniversityTabProps) {
+  const [name, setName] = useState('Rahul Deshmukh');
+  const [sid, setSid] = useState('20249912');
+  const [degree, setDegree] = useState('B.Tech Cyber Security');
+  const [code, setCode] = useState('104');
+  const [gpa, setGpa] = useState('3.95');
   const [issuing, setIssuing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -375,8 +432,17 @@ function UniversityTab() {
     e.preventDefault();
     setIssuing(true); setResult(null);
     setTimeout(() => {
-      setResult('0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e');
+      const commitment = '0x8f3c411a09d7b42ef0192a8c7b6e5d4c' + Math.random().toString(16).substring(2, 10) + '3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e';
+      setResult(commitment);
       setIssuing(false);
+      onMint({
+        name,
+        degree,
+        gpa,
+        id: sid,
+        code,
+        commitment
+      });
     }, 1200);
   };
 
@@ -393,7 +459,9 @@ function UniversityTab() {
         <div className="card">
           <h3 style={{ fontSize: '1rem', marginBottom: 16 }}>📝 Mint Digital Student Credential</h3>
           <form onSubmit={handleIssue} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div><span className="label">Student Name</span><input className="input" required value={name} onChange={e => setName(e.target.value)} /></div>
             <div><span className="label">Student ID (Uint64)</span><input className="input" required value={sid} onChange={e => setSid(e.target.value)} /></div>
+            <div><span className="label">Degree Program Title</span><input className="input" required value={degree} onChange={e => setDegree(e.target.value)} /></div>
             <div><span className="label">Degree Code (Uint32)</span><input className="input" required value={code} onChange={e => setCode(e.target.value)} /></div>
             <div><span className="label">Cumulative GPA</span><input className="input" required value={gpa} onChange={e => setGpa(e.target.value)} /></div>
             <button type="submit" className="btn btn-primary" disabled={issuing} style={{ justifyContent: 'center', marginTop: 4 }}>
@@ -487,7 +555,7 @@ function EmployerTab() {
         <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
           <h3 style={{ fontSize: '1rem' }}>🔍 Verify ZK Proof</h3>
           <div className="flex-row">
-            <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#34d399' }}>Load Valid ZK Proof</button>
+            <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#34d399' }}>Load ZK Proof</button>
             <button className="btn btn-outline" onClick={loadFake} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(244,63,94,0.4)', color: '#fda4af' }}>Load Fake ZK Proof</button>
           </div>
         </div>
@@ -519,21 +587,15 @@ function EmployerTab() {
 //  TAB 5: Blockchain Explorer
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function ExplorerTab() {
-  const TXS = [
-    { circuit: 'issue_credential', type: 'Credential Issued', time: '1 min ago', block: 1024 },
-    { circuit: 'prove_gpa_threshold', type: 'ZK Proof Verified', time: '5 min ago', block: 1018 },
-    { circuit: 'prove_enrollment', type: 'ZK Proof Verified', time: '12 min ago', block: 1012 },
-  ];
-
+function ExplorerTab({ activities }: { activities: Activity[] }) {
   return (
     <div className="flex-col fade-in">
       <div className="grid-4">
         {[
-          { label: 'Total Commitments', value: '14,892', icon: '📜', sub: '↑ 14 today' },
-          { label: 'ZK Proofs Checked', value: '89,401', icon: '🛡️', sub: '100% ZK Privacy' },
+          { label: 'Total Commitments', value: (14890 + activities.filter(a => a.circuit === 'issue_credential').length).toString(), icon: '📜', sub: 'Updated live' },
+          { label: 'ZK Proofs Checked', value: (89400 + activities.filter(a => a.circuit !== 'issue_credential').length).toString(), icon: '🛡️', sub: '100% ZK Privacy' },
           { label: 'Active Smart Contracts', value: '1', icon: '⚡', sub: 'Version 1.0.0' },
-          { label: 'Latest Block', value: '#1,024', icon: '⛓️', sub: 'Block Time ~3s' },
+          { label: 'Latest Block', value: '#' + (activities.length > 0 ? activities[0].block : 1024).toString(), icon: '⛓️', sub: 'Block Time ~3s' },
         ].map(m => (
           <div key={m.label} className="card">
             <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
@@ -549,7 +611,7 @@ function ExplorerTab() {
       <div className="card">
         <h3 style={{ fontSize: '1.05rem', marginBottom: 16 }}>⛓️ Recent ZK Campus Vault Ledger Transactions</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {TXS.map((tx, i) => (
+          {activities.map((tx, i) => (
             <div key={i} className="flex-row" style={{ padding: '12px 18px', background: 'rgba(0,0,0,0.25)', borderRadius: 12, justifyContent: 'space-between', border: '1px solid var(--border)' }}>
               <div className="flex-row">
                 <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
