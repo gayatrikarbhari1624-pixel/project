@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Real Wallet Pop-ups
+ *  Theme: Sidebar SaaS Dashboard with Hybrid Wallet Connection
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -48,6 +48,7 @@ const DEPLOYED_CONTRACT = {
 function App() {
   const [tab, setTab] = useState<Tab>('how');
   const [wallet, setWallet] = useState<string | null>(null);
+  const [isSandboxWallet, setIsSandboxWallet] = useState<boolean>(false);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
   const [score, setScore] = useState<number>(0);
@@ -56,31 +57,52 @@ function App() {
     try {
       // @ts-ignore
       if (typeof window.midnight === 'undefined') {
-        alert("Lace kiva 1AM Wallet browser extension सापडली नाही! Please verify extension install keleli ahe.");
+        // Fallback to Sandbox mode so the user is never blocked!
+        setIsSandboxWallet(true);
+        setWallet("mn_sandbox_wallet");
+        setScore(prev => prev + 50);
         return;
       }
       
-      // Explicitly target mnLace or lace to trigger Chrome Extension pop-up window!
+      // Try to find any available provider under window.midnight
       // @ts-ignore
-      const walletProvider = window.midnight.mnLace || window.midnight.lace;
+      const providers = Object.keys(window.midnight || {});
+      if (providers.length === 0) {
+        setIsSandboxWallet(true);
+        setWallet("mn_sandbox_wallet");
+        setScore(prev => prev + 50);
+        return;
+      }
+
+      // Check if mnLace / lace exists, otherwise take first provider
+      const providerKey = providers.find(k => k.toLowerCase().includes('lace') || k.toLowerCase().includes('oneam') || k.toLowerCase().includes('1am')) || providers[0];
+      // @ts-ignore
+      const walletProvider = window.midnight[providerKey];
+      
       if (!walletProvider) {
-        alert("Midnight wallet connector api failed. Please open Lace/1AM extension manually.");
+        setIsSandboxWallet(true);
+        setWallet("mn_sandbox_wallet");
+        setScore(prev => prev + 50);
         return;
       }
       
-      // Executing enable() pops up the real permissions window!
       const api = await walletProvider.enable();
       const state = typeof api.state === 'function' ? await api.state() : api;
       
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
+        setIsSandboxWallet(false);
         setScore(prev => prev + 50);
       } else {
         setWallet("Connected");
+        setIsSandboxWallet(false);
       }
     } catch (err: any) {
-      console.error(err);
-      alert(`Wallet popup permission denied or closed: ${err.message || err}`);
+      console.warn("Wallet popup initialization failed, falling back to sandbox connection:", err);
+      // Fallback on error
+      setIsSandboxWallet(true);
+      setWallet("mn_sandbox_wallet");
+      setScore(prev => prev + 50);
     }
   };
 
@@ -178,6 +200,16 @@ function App() {
       {/* Main dashboard viewport */}
       <div className="main-wrapper">
         <main className="main-content fade-in">
+          {/* Connection Mode Warning Banner */}
+          {isSandboxWallet && (
+            <div className="card" style={{ marginBottom: 16, padding: '10px 18px', background: 'rgba(251, 191, 36, 0.08)', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <strong>Sandbox Mode active:</strong> Extension not detected in this browser. Running ZK proving circuit loops locally via simulator.
+              </span>
+            </div>
+          )}
+
           {/* Active Contract Info Banner */}
           <div className="card" style={{ marginBottom: 26, padding: '12px 20px', background: 'rgba(20, 184, 166, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, borderColor: 'var(--border)' }}>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -416,7 +448,7 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 3: University Issuer
+//  TAB 3: University Portal
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 interface UniversityTabProps {
