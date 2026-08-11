@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Automatic Provider Solver
+ *  Theme: Sidebar SaaS Dashboard with Synchronous Wallet Pop-ups
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -54,77 +54,38 @@ function App() {
   const [score, setScore] = useState<number>(0);
 
   const connectWallet = async () => {
+    // @ts-ignore
+    const midnight = window.midnight;
+    if (!midnight) {
+      alert("Midnight wallet extension not detected! Please install Lace (Preprod) or 1AM Wallet extension on this browser.");
+      return;
+    }
+
+    // Direct synchronous lookup to avoid user-gesture popup blocking!
+    // @ts-ignore
+    const provider = midnight['1am'] || midnight.mnLace || midnight.lace || midnight[Object.keys(midnight)[0]];
+    if (!provider) {
+      alert("Lace kiva 1AM Wallet browser connector सापडला नाही!");
+      return;
+    }
+
     try {
-      // @ts-ignore
-      const midnight = window.midnight;
-      if (!midnight) {
-        alert("Midnight wallet extension not detected! Please install Lace (Preprod) or 1AM Wallet extension on this browser.");
-        return;
-      }
-
-      console.log("Detected window.midnight keys:", Object.keys(midnight));
-      const keys = Object.keys(midnight);
-      if (keys.length === 0) {
-        alert("Midnight wallet is present, but no active providers were registered.");
-        return;
-      }
-
-      let api = null;
-      let connectedKey = "";
-
-      // Prioritize keys that contain UUIDs or are not metadata-only, checking for .enable() kiva .connect()
-      // We sort the keys to try standard wallet API injectors first
-      const sortedKeys = [...keys].sort((a, b) => {
-        // Put UUID keys first
-        const aIsUuid = a.includes('-') ? 1 : 0;
-        const bIsUuid = b.includes('-') ? 1 : 0;
-        return bIsUuid - aIsUuid;
-      });
-
-      for (const key of sortedKeys) {
-        // @ts-ignore
-        const providerInstance = midnight[key];
-        if (!providerInstance) continue;
-
-        console.log(`Attempting connection with key [${key}]:`, providerInstance);
-        try {
-          if (typeof providerInstance.enable === 'function') {
-            api = await providerInstance.enable();
-            connectedKey = key;
-            break;
-          } else if (typeof providerInstance.connect === 'function') {
-            api = await providerInstance.connect();
-            connectedKey = key;
-            break;
-          } else if (typeof providerInstance === 'function') {
-            api = await providerInstance();
-            connectedKey = key;
-            break;
-          }
-        } catch (innerError) {
-          console.warn(`Connection failed for key [${key}]:`, innerError);
-        }
+      let api;
+      if (typeof provider.enable === 'function') {
+        api = await provider.enable();
+      } else if (typeof provider.connect === 'function') {
+        api = await provider.connect();
+      } else if (typeof provider === 'function') {
+        api = await provider();
+      } else {
+        api = provider;
       }
 
       if (!api) {
-        // Fallback: If no provider succeeded, look for raw provider objects
-        for (const key of sortedKeys) {
-          // @ts-ignore
-          const providerInstance = midnight[key];
-          if (providerInstance && typeof providerInstance === 'object') {
-            api = providerInstance;
-            connectedKey = key;
-            break;
-          }
-        }
-      }
-
-      if (!api) {
-        alert("Could not connect to any Midnight wallet API instance.");
+        alert("Wallet connection returned empty state.");
         return;
       }
 
-      console.log(`Successfully connected via key [${connectedKey}]`);
       const state = typeof api.state === 'function' ? await api.state() : api;
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
@@ -139,7 +100,7 @@ function App() {
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
-      console.error("Wallet connection flow failed:", err);
+      console.error("Wallet connection popup error:", err);
       alert(`Wallet Connection Error: ${err.message || err}`);
     }
   };
