@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Gamified ZK Sandbox
+ *  Theme: Sidebar SaaS Dashboard with Dynamic Portal Features
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -14,6 +14,7 @@ interface Student {
   id: string;
   code: string;
   commitment?: string;
+  revoked?: boolean;
 }
 
 interface Activity {
@@ -21,18 +22,19 @@ interface Activity {
   type: string;
   time: string;
   block: number;
+  status: 'SUCCESS' | 'REVOKED' | 'FAILED';
 }
 
 const INITIAL_STUDENTS: Student[] = [
-  { name: 'Alice Sharma', degree: 'B.Tech Computer Science', gpa: '3.85', id: '20249821', code: '101', commitment: '0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e' },
-  { name: 'Rohan Patil', degree: 'M.Tech Data Science & AI', gpa: '3.92', id: '20249845', code: '102', commitment: '0x3cb411af09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f2b' },
-  { name: 'Priya Deshmukh', degree: 'B.Sc Information Technology', gpa: '3.40', id: '20249872', code: '103', commitment: '0x1a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e8f3c41' },
+  { name: 'Alice Sharma', degree: 'B.Tech Computer Science', gpa: '3.85', id: '20249821', code: '101', commitment: '0x8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e', revoked: false },
+  { name: 'Rohan Patil', degree: 'M.Tech Data Science & AI', gpa: '3.92', id: '20249845', code: '102', commitment: '0x3cb411af09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f2b', revoked: false },
+  { name: 'Priya Deshmukh', degree: 'B.Sc Information Technology', gpa: '3.40', id: '20249872', code: '103', commitment: '0x1a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e8f3c41', revoked: true },
 ];
 
 const INITIAL_ACTIVITIES: Activity[] = [
-  { circuit: 'issue_credential', type: 'Credential Issued', time: '1 min ago', block: 1024 },
-  { circuit: 'prove_gpa_threshold', type: 'ZK Proof Verified', time: '5 min ago', block: 1018 },
-  { circuit: 'prove_enrollment', type: 'ZK Proof Verified', time: '12 min ago', block: 1012 },
+  { circuit: 'issue_credential', type: 'Credential Issued (Alice Sharma)', time: '1 min ago', block: 1024, status: 'SUCCESS' },
+  { circuit: 'prove_gpa_threshold', type: 'ZK Proof Verified (Rohan Patil)', time: '5 min ago', block: 1018, status: 'SUCCESS' },
+  { circuit: 'prove_enrollment', type: 'ZK Proof Verified (Priya Deshmukh)', time: '12 min ago', block: 1012, status: 'REVOKED' },
 ];
 
 type Tab = 'how' | 'student' | 'university' | 'employer' | 'explorer' | 'game';
@@ -48,8 +50,6 @@ function App() {
   const [wallet, setWallet] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
-
-  // Gamification score
   const [score, setScore] = useState<number>(0);
 
   const connectWallet = async () => {
@@ -78,7 +78,7 @@ function App() {
       const state = typeof api.state === 'function' ? await api.state() : api;
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
-        setScore(prev => prev + 50); // Bonus score for wallet connection!
+        setScore(prev => prev + 50);
       } else {
         setWallet("Connected");
       }
@@ -94,9 +94,24 @@ function App() {
       circuit: 'issue_credential',
       type: `Credential Issued (${newStudent.name})`,
       time: 'Just now',
-      block: nextBlock
+      block: nextBlock,
+      status: 'SUCCESS'
     }, ...prev]);
-    setScore(prev => prev + 100); // 100 points for minting!
+    setScore(prev => prev + 100);
+  };
+
+  const handleRevokeStudent = (studentId: string) => {
+    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, revoked: true } : s));
+    const targetStudent = students.find(s => s.id === studentId);
+    const nextBlock = activities.length > 0 ? activities[0].block + 1 : 1025;
+    setActivities(prev => [{
+      circuit: 'revoke_credential',
+      type: `Credential Revoked (${targetStudent?.name || 'Unknown Student'})`,
+      time: 'Just now',
+      block: nextBlock,
+      status: 'REVOKED'
+    }, ...prev]);
+    setScore(prev => prev + 80);
   };
 
   const handleAddVerificationActivity = (circuitName: string, studentName: string, passed: boolean) => {
@@ -105,9 +120,10 @@ function App() {
       circuit: circuitName,
       type: `ZK Proof Verified (${studentName} - ${passed ? 'PASSED' : 'FAILED'})`,
       time: 'Just now',
-      block: nextBlock
+      block: nextBlock,
+      status: passed ? 'SUCCESS' : 'FAILED'
     }, ...prev]);
-    if (passed) setScore(prev => prev + 150); // 150 points for successful ZK proof generation!
+    if (passed) setScore(prev => prev + 150);
   };
 
   return (
@@ -143,7 +159,6 @@ function App() {
         </div>
 
         <div className="sidebar-footer">
-          {/* Gamification stats */}
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 8, textAlign: 'center' }}>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>🏆 ZK Power Points</span>
             <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--mint)' }} className="sparkle-elem">{score} XP</div>
@@ -175,7 +190,7 @@ function App() {
 
           {tab === 'how' && <HowItWorksTab onNavigate={setTab} />}
           {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
-          {tab === 'university' && <UniversityTab onMint={handleMintStudent} />}
+          {tab === 'university' && <UniversityTab students={students} onMint={handleMintStudent} onRevoke={handleRevokeStudent} />}
           {tab === 'employer' && <EmployerTab />}
           {tab === 'explorer' && <ExplorerTab activities={activities} />}
           {tab === 'game' && <ZkGameTab score={score} setScore={setScore} />}
@@ -215,26 +230,25 @@ function HowItWorksTab({ onNavigate }: { onNavigate: (t: Tab) => void }) {
         </div>
       </div>
 
+      {/* Dynamic educational information cards */}
+      <h3 style={{ fontSize: '1.25rem', marginTop: 10 }} className="gradient-text">Midnight Technology Stack</h3>
       <div className="grid-3">
         <div className="card">
-          <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>🔒</div>
-          <h4 style={{ fontSize: '1.05rem', marginBottom: 6, color: 'var(--primary-light)' }}>Client-Side Vault</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
-            ZK proofs are generated entirely inside your local browser memory sandbox. Your private identifiers never traverse the network.
+          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>🌙 What is Midnight?</h4>
+          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+            Midnight is a data protection-focused sidechain on Cardano. It uses Zero-Knowledge Proofs to allow users to verify claims without exposing private data records.
           </p>
         </div>
         <div className="card">
-          <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>🏛️</div>
-          <h4 style={{ fontSize: '1.05rem', marginBottom: 6, color: 'var(--mint)' }}>On-Chain Commitment</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
-            Credentials are committed onto the Midnight ledger as 32-byte secure hashes, ensuring absolute immutability and zero data leaks.
+          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>📝 Compact Contract Language</h4>
+          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+            Compact is a programming language specifically built for writing smart contracts with private states on Midnight, converting logic constraints into ZK circuits.
           </p>
         </div>
         <div className="card">
-          <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>⚡</div>
-          <h4 style={{ fontSize: '1.05rem', marginBottom: 6, color: 'var(--emerald)' }}>Instant Verification</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
-            Verification checks complete instantly. No manual registries, email queries, or long background checks required.
+          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>🔑 Shielding Keys</h4>
+          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+            Midnight DApps use client-side cryptography keys to shield public states and verify assertions mathematically on-chain without database lookup.
           </p>
         </div>
       </div>
@@ -292,6 +306,16 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
+  const downloadProof = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(proof, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `zk_proof_${s.name.toLowerCase().replace(' ', '_')}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
   return (
     <div className="flex-col fade-in">
       <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.05))' }}>
@@ -305,7 +329,7 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Switch Active Student Profile:</span>
         {students.map((st, i) => (
           <button key={i} className={`btn btn-outline ${preset === i ? 'active' : ''}`} style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={() => { setPreset(i); setProof(null); }}>
-            {st.name} ({st.gpa} GPA)
+            {st.name} {st.revoked && '🚫 (Revoked)'}
           </button>
         ))}
       </div>
@@ -318,9 +342,14 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
             <div><span className="label">Degree Program</span><input className="input" readOnly value={s.degree + ' (Code: ' + s.code + ')'} /></div>
             <div><span className="label">Actual Cumulative GPA (Private Input)</span><input className="input" readOnly value={s.gpa} /></div>
           </div>
-          <p style={{ marginTop: 14, fontSize: '0.76rem', color: 'var(--text-dim)', background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 10, lineHeight: 1.5 }}>
-            🛡️ <strong>Privacy Protection:</strong> None of these inputs are broadcast to the Midnight network. Only the computed ZK Proof leaves your wallet.
-          </p>
+          
+          {/* Dynamic ZK Shield Visualization Strength */}
+          <div style={{ marginTop: 14, padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 12, border: '1px solid var(--border)' }}>
+            <span className="label">Midnight Shield Security Strength</span>
+            <div style={{ display: 'flex', gap: 6, fontSize: '1.1rem', color: 'var(--amber)' }}>
+              ⭐⭐⭐⭐⭐ <span style={{ fontSize: '0.8rem', color: 'var(--mint)', marginLeft: 8 }}>100% ZK Privacy</span>
+            </div>
+          </div>
         </div>
 
         <div className="card">
@@ -351,8 +380,8 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
             </p>
           )}
 
-          <button className="btn btn-primary" disabled={generating} onClick={generate} style={{ width: '100%', justifyContent: 'center' }}>
-            {generating ? `Computing ZK Proof (Step ${step}/3)...` : '✨ Compute ZK Proof'}
+          <button className="btn btn-primary" disabled={generating || s.revoked} onClick={generate} style={{ width: '100%', justifyContent: 'center' }}>
+            {s.revoked ? '🚫 Credential Revoked' : generating ? `Computing ZK Proof (Step ${step}/3)...` : '✨ Compute ZK Proof'}
           </button>
         </div>
       </div>
@@ -373,9 +402,14 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
             <h4 style={{ color: proof.privacy.status === 'VALID' ? '#34d399' : '#f43f5e' }}>
               {proof.privacy.status === 'VALID' ? '✅ ZK Proof Generated Successfully!' : '❌ ZK Proof Failed — Criteria Not Satisfied'}
             </h4>
-            <button className="btn btn-outline" style={{ padding: '5px 12px', fontSize: '0.75rem' }} onClick={copy}>
-              {copied ? '✓ Copied!' : '📋 Copy Proof JSON'}
-            </button>
+            <div className="flex-row">
+              <button className="btn btn-outline" style={{ padding: '5px 12px', fontSize: '0.75rem' }} onClick={copy}>
+                {copied ? '✓ Copied!' : '📋 Copy Proof'}
+              </button>
+              <button className="btn btn-outline" style={{ padding: '5px 12px', fontSize: '0.75rem', borderColor: 'var(--secondary)' }} onClick={downloadProof}>
+                💾 Download Proof
+              </button>
+            </div>
           </div>
           <div className="code-block"><pre style={{ margin: 0 }}>{JSON.stringify(proof, null, 2)}</pre></div>
         </div>
@@ -389,10 +423,12 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 interface UniversityTabProps {
+  students: Student[];
   onMint: (s: Student) => void;
+  onRevoke: (id: string) => void;
 }
 
-function UniversityTab({ onMint }: UniversityTabProps) {
+function UniversityTab({ students, onMint, onRevoke }: UniversityTabProps) {
   const [name, setName] = useState('Rahul Deshmukh');
   const [sid, setSid] = useState('20249912');
   const [degree, setDegree] = useState('B.Tech Cyber Security');
@@ -414,7 +450,8 @@ function UniversityTab({ onMint }: UniversityTabProps) {
         gpa,
         id: sid,
         code,
-        commitment
+        commitment,
+        revoked: false
       });
     }, 1200);
   };
@@ -451,18 +488,29 @@ function UniversityTab({ onMint }: UniversityTabProps) {
           )}
         </div>
 
-        <div className="card">
-          <h3 style={{ fontSize: '1rem', marginBottom: 12 }}>ℹ️ How does it work?</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong style={{ color: 'var(--primary-light)' }}>Step 1:</strong> University takes student record and hashes it with a random secret salt.
-            </div>
-            <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong style={{ color: 'var(--secondary)' }}>Step 2:</strong> Commitment is verified against constraints in the Compact circuit.
-            </div>
-            <div style={{ padding: 12, background: 'rgba(0,0,0,0.3)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              <strong style={{ color: 'var(--mint)' }}>Step 3:</strong> The resulting 32-byte hash commitment is recorded on the public Midnight ledger.
-            </div>
+        {/* Dynamic credential revocation registry */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <h3 style={{ fontSize: '1rem', color: 'var(--rose)' }}>🚫 Active Credential Registry</h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Universities can revoke issued student commitments directly from the ledger registry.</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {students.map((st, idx) => (
+              <div key={idx} className="flex-row" style={{ padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 10, justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div>
+                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>{st.name}</strong>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>ID: {st.id}</span>
+                </div>
+                <div>
+                  {st.revoked ? (
+                    <span className="badge badge-red">Revoked</span>
+                  ) : (
+                    <button className="btn btn-outline" style={{ padding: '4px 10px', fontSize: '0.72rem', borderColor: 'var(--rose)', color: 'var(--rose)' }} onClick={() => onRevoke(st.id)}>
+                      Revoke Commit
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -478,6 +526,12 @@ function EmployerTab() {
   const [input, setInput] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [result, setResult] = useState<null | { valid: boolean; statement: string }>(null);
+  
+  // Audit logs state
+  const [auditLogs, setAuditLogs] = useState<{ statement: string; valid: boolean; time: string }[]>([
+    { statement: "Alice Sharma: GPA >= 3.50", valid: true, time: "10 mins ago" },
+    { statement: "Priya Deshmukh: Enrollment Proof", valid: false, time: "25 mins ago" }
+  ]);
 
   const loadValid = () => {
     setInput(JSON.stringify({ 
@@ -505,13 +559,21 @@ function EmployerTab() {
     setVerifying(true); setResult(null);
     setTimeout(() => {
       const isFake = input.includes('TAMPERED') || input.includes('FAKE');
-      setResult({
+      const verificationResult = {
         valid: !isFake,
         statement: isFake
           ? 'Verification Failed. Cryptographic proof parameters are invalid or commitment mismatch.'
           : 'Verified. Candidate meets GPA requirements. Zero private data leaked.'
-      });
+      };
+      setResult(verificationResult);
       setVerifying(false);
+
+      // Append verification query to audit log
+      setAuditLogs(prev => [{
+        statement: isFake ? "Untrusted Client: GPA >= 3.80" : "Client verification check: GPA >= 3.50",
+        valid: !isFake,
+        time: "Just now"
+      }, ...prev]);
     }, 1200);
   };
 
@@ -524,33 +586,52 @@ function EmployerTab() {
         </p>
       </div>
 
-      <div className="card">
-        <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
-          <h3 style={{ fontSize: '1rem' }}>🔍 Verify ZK Proof</h3>
-          <div className="flex-row">
-            <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#34d399' }}>Load ZK Proof</button>
-            <button className="btn btn-outline" onClick={loadFake} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(244,63,94,0.4)', color: '#fda4af' }}>Load Fake ZK Proof</button>
-          </div>
-        </div>
-
-        <form onSubmit={verify} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <textarea rows={6} className="input" style={{ fontFamily: 'var(--font-code)', fontSize: '0.82rem' }} placeholder='Paste candidate ZK Proof JSON here...' required value={input} onChange={e => setInput(e.target.value)} />
-          <button type="submit" className="btn btn-primary" disabled={verifying} style={{ justifyContent: 'center' }}>
-            {verifying ? 'Verifying ZK proof validity...' : '🛡️ Verify ZK Proof'}
-          </button>
-        </form>
-
-        {result && (
-          <div style={{ marginTop: 20, padding: 20, borderRadius: 14, background: result.valid ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)', border: `1px solid ${result.valid ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)'}` }}>
-            <h4 style={{ fontSize: '1.2rem', color: result.valid ? '#34d399' : '#f43f5e', marginBottom: 8 }}>
-              {result.valid ? '✅ ZK PROOF AUTHENTIC & VERIFIED' : '❌ ZK PROOF VERIFICATION FAILED'}
-            </h4>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{result.statement}</p>
-            <div style={{ marginTop: 10, fontSize: '0.78rem', color: 'var(--text-dim)' }}>
-              Validation Contract: <code style={{ color: 'var(--primary-light)' }}>campus_vault.compact</code> • Data leaked: <strong>None</strong>
+      <div className="grid-2">
+        <div className="card">
+          <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
+            <h3 style={{ fontSize: '1rem' }}>🔍 Verify ZK Proof</h3>
+            <div className="flex-row">
+              <button className="btn btn-outline" onClick={loadValid} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(16,185,129,0.4)', color: '#34d399' }}>Load ZK Proof</button>
+              <button className="btn btn-outline" onClick={loadFake} style={{ padding: '5px 12px', fontSize: '0.78rem', borderColor: 'rgba(244,63,94,0.4)', color: '#fda4af' }}>Load Fake ZK Proof</button>
             </div>
           </div>
-        )}
+
+          <form onSubmit={verify} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <textarea rows={6} className="input" style={{ fontFamily: 'var(--font-code)', fontSize: '0.82rem' }} placeholder='Paste candidate ZK Proof JSON here...' required value={input} onChange={e => setInput(e.target.value)} />
+            <button type="submit" className="btn btn-primary" disabled={verifying} style={{ justifyContent: 'center' }}>
+              {verifying ? 'Verifying ZK proof validity...' : '🛡️ Verify ZK Proof'}
+            </button>
+          </form>
+
+          {result && (
+            <div style={{ marginTop: 20, padding: 20, borderRadius: 14, background: result.valid ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)', border: `1px solid ${result.valid ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)'}` }}>
+              <h4 style={{ fontSize: '1.2rem', color: result.valid ? '#34d399' : '#f43f5e', marginBottom: 8 }}>
+                {result.valid ? '✅ ZK PROOF AUTHENTIC & VERIFIED' : '❌ ZK PROOF VERIFICATION FAILED'}
+              </h4>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{result.statement}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Dynamic audit logs for employers */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <h3 style={{ fontSize: '1rem', color: 'var(--primary-light)' }}>📋 Verification Audit Trail</h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>History of verification audits performed by this node.</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {auditLogs.map((log, index) => (
+              <div key={index} className="flex-row" style={{ padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 10, justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div>
+                  <span style={{ fontSize: '0.82rem', display: 'block', color: 'var(--text-muted)' }}>{log.statement}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Timestamp: {log.time}</span>
+                </div>
+                <span className={`badge ${log.valid ? 'badge-green' : 'badge-red'}`}>
+                  {log.valid ? 'Verified' : 'Invalid'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -581,26 +662,49 @@ function ExplorerTab({ activities }: { activities: Activity[] }) {
         ))}
       </div>
 
-      <div className="card">
-        <h3 style={{ fontSize: '1.05rem', marginBottom: 16 }}>⛓️ Recent ZK Campus Vault Ledger Transactions</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {activities.map((tx, i) => (
-            <div key={i} className="flex-row" style={{ padding: '12px 18px', background: 'rgba(0,0,0,0.25)', borderRadius: 12, justifyContent: 'space-between', border: '1px solid var(--border)' }}>
-              <div className="flex-row">
-                <span style={{ color: '#34d399', fontWeight: 'bold' }}>✓</span>
-                <div>
-                  <strong style={{ fontSize: '0.92rem' }}>{tx.type}</strong>
-                  <span className="badge" style={{ marginLeft: 10 }}>{tx.circuit}</span>
+      <div className="grid-2">
+        <div className="card">
+          <h3 style={{ fontSize: '1.05rem', marginBottom: 16 }}>⛓️ Recent ZK Campus Vault Ledger Transactions</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {activities.map((tx, i) => (
+              <div key={i} className="flex-row" style={{ padding: '12px 18px', background: 'rgba(0,0,0,0.25)', borderRadius: 12, justifyContent: 'space-between', border: '1px solid var(--border)' }}>
+                <div className="flex-row">
+                  <span style={{ color: tx.status === 'SUCCESS' ? '#34d399' : '#f43f5e', fontWeight: 'bold' }}>
+                    {tx.status === 'SUCCESS' ? '✓' : tx.status === 'REVOKED' ? '🚫' : '✗'}
+                  </span>
+                  <div>
+                    <strong style={{ fontSize: '0.92rem' }}>{tx.type}</strong>
+                    <span className="badge" style={{ marginLeft: 10 }}>{tx.circuit}</span>
+                  </div>
+                </div>
+                <div className="flex-row" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <span>Block {tx.block}</span>
+                  <span className="badge badge-green">Confirmed</span>
                 </div>
               </div>
-              <div className="flex-row" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <span>Block {tx.block}</span>
-                <span style={{ color: 'var(--text-dim)' }}>|</span>
-                <span>{tx.time}</span>
-                <span className="badge badge-green">Confirmed</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Ledger statistics and health card */}
+        <div className="card">
+          <h3 style={{ fontSize: '1.05rem', marginBottom: 16, color: 'var(--mint)' }}>⚡ Node Synchronization Status</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <span className="label">Block Gas Limit Utilization</span>
+              <div style={{ width: '100%', background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 99 }}>
+                <div style={{ width: '42%', background: 'var(--mint)', height: '100%', borderRadius: 99 }}></div>
               </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Used: 423,892 Gas (42%)</span>
             </div>
-          ))}
+            <div>
+              <span className="label">Peer Consensus Network Health</span>
+              <div style={{ width: '100%', background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 99 }}>
+                <div style={{ width: '92%', background: 'var(--primary)', height: '100%', borderRadius: 99 }}></div>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Connected Peers: 12/13 (92% Strength)</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
