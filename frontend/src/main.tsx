@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Active Wallet Pop-ups
+ *  Theme: Sidebar SaaS Dashboard with Dynamic API Resolution
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -61,44 +61,60 @@ function App() {
         alert("Midnight wallet extension not detected! Please install Lace (Preprod) or 1AM Wallet extension on this browser.");
         return;
       }
-      
-      // Explicitly locate the mnLace or lace provider keys
-      // @ts-ignore
-      const provider = midnight.mnLace || midnight.lace;
-      if (!provider) {
-        // Fallback checks for other midnight extensions
-        const keys = Object.keys(midnight);
-        if (keys.length > 0) {
-          // @ts-ignore
-          const customProvider = midnight[keys[0]];
-          const api = await customProvider.enable();
-          const state = typeof api.state === 'function' ? await api.state() : api;
-          if (state && state.address) {
-            setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
-            setIsSandboxWallet(false);
-            setScore(prev => prev + 50);
-            return;
-          }
-        }
-        alert("Lace kiva 1AM Wallet browser connector सापडला नाही! Please extension check kara.");
+
+      console.log("Detected window.midnight:", midnight);
+      const keys = Object.keys(midnight);
+      if (keys.length === 0) {
+        alert("Midnight wallet is present, but no active providers were registered.");
         return;
       }
 
-      // Triggers the real Lace pop-up authorization!
-      const api = await provider.enable();
-      const state = typeof api.state === 'function' ? await api.state() : api;
+      // Find best available provider keys (mnLace, lace, or first available)
+      const providerKey = keys.find(k => k.toLowerCase().includes('lace') || k.toLowerCase().includes('1am') || k.toLowerCase().includes('oneam')) || keys[0];
+      // @ts-ignore
+      const provider = midnight[providerKey];
       
+      if (!provider) {
+        alert(`Could not resolve provider for key: ${providerKey}`);
+        return;
+      }
+
+      console.log(`Connecting via provider [${providerKey}]:`, provider);
+      let api;
+      
+      // Dynamic method lookup to avoid "enable is not a function" errors
+      if (typeof provider.enable === 'function') {
+        api = await provider.enable();
+      } else if (typeof provider.connect === 'function') {
+        api = await provider.connect();
+      } else if (typeof provider === 'function') {
+        api = await provider();
+      } else {
+        // Fallback: if provider has nested methods or is an instance
+        api = provider;
+      }
+
+      if (!api) {
+        alert("Wallet connection returned empty API state.");
+        return;
+      }
+
+      const state = typeof api.state === 'function' ? await api.state() : api;
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
         setIsSandboxWallet(false);
         setScore(prev => prev + 50);
+      } else if (typeof api.getAddress === 'function') {
+        const addr = await api.getAddress();
+        setWallet(addr.substring(0, 8) + '...' + addr.substring(addr.length - 4));
+        setIsSandboxWallet(false);
       } else {
         setWallet("Connected");
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
-      console.error("Lace popup enable failed:", err);
-      alert(`Wallet Popup Action failed: ${err.message || err}`);
+      console.error("Wallet connection flow failed:", err);
+      alert(`Wallet Connection Error: ${err.message || err}`);
     }
   };
 
