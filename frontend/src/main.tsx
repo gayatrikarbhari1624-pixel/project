@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Dual Namespace Wallet Prover
+ *  Theme: Sidebar SaaS Dashboard with Standard CIP-30 Address Resolution
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -60,11 +60,10 @@ function App() {
     const cardano = window.cardano || {};
 
     if (Object.keys(midnight).length === 0 && Object.keys(cardano).length === 0) {
-      alert("Midnight/Cardano wallet extensions not detected! Please verify Lace kiva 1AM Wallet browser extension install ahe.");
+      alert("Midnight/Cardano wallet extensions not detected! Please install Lace or 1AM Wallet extension on this browser.");
       return;
     }
 
-    // Lookup Lace Wallet in both window.midnight AND window.cardano namespaces
     const provider = 
       midnight.lace || 
       cardano.lace || 
@@ -98,17 +97,33 @@ function App() {
         return;
       }
 
-      const state = typeof api.state === 'function' ? await api.state() : api;
+      console.log("Successfully connected API instance:", api);
+
+      // Parse CIP-30 address format dynamically
+      let rawAddr = "";
+      const state = typeof api.state === 'function' ? await api.state() : null;
+
       if (state && state.address) {
-        setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
+        rawAddr = state.address;
+      } else if (typeof api.getChangeAddress === 'function') {
+        rawAddr = await api.getChangeAddress();
+      } else if (typeof api.getUsedAddresses === 'function') {
+        const addrs = await api.getUsedAddresses();
+        if (addrs && addrs.length > 0) rawAddr = addrs[0];
+      } else if (api.address) {
+        rawAddr = api.address;
+      }
+
+      if (rawAddr) {
+        // Format address (support hex kiva bech32 formats)
+        const displayAddr = rawAddr.length > 12 
+          ? rawAddr.substring(0, 8) + '...' + rawAddr.substring(rawAddr.length - 4)
+          : rawAddr;
+        setWallet(displayAddr);
         setIsSandboxWallet(false);
         setScore(prev => prev + 50);
-      } else if (typeof api.getAddress === 'function') {
-        const addr = await api.getAddress();
-        setWallet(addr.substring(0, 8) + '...' + addr.substring(addr.length - 4));
-        setIsSandboxWallet(false);
       } else {
-        setWallet("Connected");
+        setWallet("Connected (Lace)");
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
