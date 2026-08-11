@@ -10,7 +10,14 @@ ZK Campus Vault eliminates fake degrees and protects student privacy using the *
 - **100% Privacy for Students**: Students generate ZK proofs locally on their device. No personal data is exposed.
 - **Instant Verification**: Employers can verify the cryptographic proofs instantly without ever seeing the student's actual marks or ID.
 
+## Live Demo
+
+🚀 **Vercel Web App**: [https://zk-campus-vault-d2sw.vercel.app/](https://zk-campus-vault-d2sw.vercel.app/)
+
 ## Screenshots & UI Flow
+
+### Main Dashboard
+![Main Dashboard](./screenshots/main_dashboard.png)
 
 ### Student Credentials Vault
 ![Student Credentials Vault](./screenshots/student_vault.png)
