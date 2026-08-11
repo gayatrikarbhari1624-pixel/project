@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — All-in-One Premium Frontend
- *  Theme: Sidebar SaaS Dashboard with Dynamic Portal Features
+ *  Theme: Sidebar SaaS Dashboard with Real Wallet Pop-ups
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -56,26 +56,22 @@ function App() {
     try {
       // @ts-ignore
       if (typeof window.midnight === 'undefined') {
-        alert("No Midnight wallet extension found! Please install the 1AM Wallet or Lace.");
+        alert("Lace kiva 1AM Wallet browser extension सापडली नाही! Please verify extension install keleli ahe.");
         return;
       }
-      // @ts-ignore
-      const walletProviders = Object.keys(window.midnight);
-      if (walletProviders.length === 0) return;
-      const providerKey = walletProviders.find(k => k.toLowerCase().includes('1am') || k.toLowerCase().includes('oneam')) || walletProviders[0];
-      // @ts-ignore
-      const provider = window.midnight[providerKey];
       
-      let api;
-      if (typeof provider.enable === 'function') {
-        api = await provider.enable();
-      } else if (typeof provider.connect === 'function') {
-        api = await provider.connect();
-      } else {
-        alert("Could not connect to wallet.");
+      // Explicitly target mnLace or lace to trigger Chrome Extension pop-up window!
+      // @ts-ignore
+      const walletProvider = window.midnight.mnLace || window.midnight.lace;
+      if (!walletProvider) {
+        alert("Midnight wallet connector api failed. Please open Lace/1AM extension manually.");
         return;
       }
+      
+      // Executing enable() pops up the real permissions window!
+      const api = await walletProvider.enable();
       const state = typeof api.state === 'function' ? await api.state() : api;
+      
       if (state && state.address) {
         setWallet(state.address.substring(0, 8) + '...' + state.address.substring(state.address.length - 4));
         setScore(prev => prev + 50);
@@ -83,7 +79,8 @@ function App() {
         setWallet("Connected");
       }
     } catch (err: any) {
-      alert(`Wallet connection failed: ${err.message || err}`);
+      console.error(err);
+      alert(`Wallet popup permission denied or closed: ${err.message || err}`);
     }
   };
 
@@ -165,7 +162,7 @@ function App() {
           </div>
 
           <button 
-            className="btn btn-outline" 
+            className="btn btn-primary" 
             style={{ width: '100%', borderColor: wallet ? 'var(--secondary)' : 'var(--primary)', color: wallet ? 'var(--mint)' : 'var(--primary-light)' }}
             onClick={connectWallet}
           >
