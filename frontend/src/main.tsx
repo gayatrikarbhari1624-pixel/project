@@ -45,6 +45,112 @@ const DEPLOYED_CONTRACT = {
   deployer: "mn_addr_undeployed1h3ssm5ru2t6eqy4g3she78zlxn96e36ms6pq996aduvmateh9p9sk96u7s"
 };
 
+// BIP173 Bech32 Encoding utilities to parse standard Cardano/Midnight addresses from hex format.
+function hexToBytes(hex: string): Uint8Array {
+  const cleanHex = hex.replace(/^0x/, "");
+  const bytes = new Uint8Array(cleanHex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(cleanHex.substring(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+function convertBits(data: Uint8Array, fromBits: number, toBits: number, pad: boolean): Uint8Array | null {
+  let acc = 0;
+  let bits = 0;
+  const result: number[] = [];
+  const maxv = (1 << toBits) - 1;
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i];
+    acc = (acc << fromBits) | value;
+    bits += fromBits;
+    while (bits >= toBits) {
+      bits -= toBits;
+      result.push((acc >> bits) & maxv);
+    }
+  }
+  if (pad) {
+    if (bits > 0) {
+      result.push((acc << (toBits - bits)) & maxv);
+    }
+  } else if (bits >= fromBits || ((acc << (toBits - bits)) & maxv)) {
+    return null;
+  }
+  return new Uint8Array(result);
+}
+
+const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+function polymod(values: Uint8Array): number {
+  let chk = 1;
+  for (let i = 0; i < values.length; i++) {
+    const top = chk >> 25;
+    chk = ((chk & 0x1ffffff) << 5) ^ values[i];
+    for (let j = 0; j < 5; j++) {
+      if ((top >> j) & 1) {
+        chk ^= [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3][j];
+      }
+    }
+  }
+  return chk;
+}
+
+function hrpExpand(hrp: string): Uint8Array {
+  const ret = new Uint8Array(hrp.length * 2 + 1);
+  for (let i = 0; i < hrp.length; i++) {
+    ret[i] = hrp.charCodeAt(i) >> 5;
+  }
+  ret[hrp.length] = 0;
+  for (let i = 0; i < hrp.length; i++) {
+    ret[hrp.length + 1 + i] = hrp.charCodeAt(i) & 31;
+  }
+  return ret;
+}
+
+function encodeBech32(hrp: string, hexString: string): string {
+  const data = hexToBytes(hexString);
+  const converted = convertBits(data, 8, 5, true);
+  if (!converted) return hexString;
+  
+  const hrpExpanded = hrpExpand(hrp);
+  const combined = new Uint8Array(hrpExpanded.length + converted.length + 6);
+  combined.set(hrpExpanded);
+  combined.set(converted, hrpExpanded.length);
+  
+  const chk = polymod(combined) ^ 1;
+  const checksum = new Uint8Array(6);
+  for (let i = 0; i < 6; i++) {
+    checksum[i] = (chk >> (5 * (5 - i))) & 31;
+  }
+  
+  let ret = hrp + '1';
+  for (let i = 0; i < converted.length; i++) {
+    ret += CHARSET[converted[i]];
+  }
+  for (let i = 0; i < 6; i++) {
+    ret += CHARSET[checksum[i]];
+  }
+  return ret;
+}
+
+function decodeAndFormatAddress(rawAddr: string): string {
+  if (!rawAddr) return "";
+  if (rawAddr.startsWith("addr") || rawAddr.startsWith("mn")) {
+    return rawAddr;
+  }
+  try {
+    const hex = rawAddr.replace(/^0x/, "");
+    // Testnet vs Mainnet address format prefix detection
+    const prefixByte = hex.substring(0, 2);
+    const isTestnet = prefixByte === '00' || prefixByte === '01' || prefixByte === '60' || prefixByte === '61' || prefixByte === '70' || prefixByte === '71';
+    const prefix = isTestnet ? "addr_test" : "addr";
+    return encodeBech32(prefix, hex);
+  } catch (e) {
+    console.error("Failed to convert address to Bech32:", e);
+    return rawAddr;
+  }
+}
+
 function App() {
   const [tab, setTab] = useState<Tab>('how');
   const [wallet, setWallet] = useState<string | null>(null);
@@ -53,30 +159,21 @@ function App() {
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
   const [score, setScore] = useState<number>(0);
 
-  const connectWallet = async (preferredProvider: 'lace' | '1am') => {
+  const connectWallet = async () => {
     // @ts-ignore
     const midnight = window.midnight || {};
     // @ts-ignore
     const cardano = window.cardano || {};
 
-    if (Object.keys(midnight).length === 0 && Object.keys(cardano).length === 0) {
-      alert("Midnight/Cardano wallet extensions not detected! Please install Lace or 1AM Wallet extension on this browser.");
-      return;
-    }
-
-    let provider = null;
-    if (preferredProvider === 'lace') {
-      provider = cardano.lace || midnight.lace || cardano.mnLace || midnight.mnLace;
-    } else {
-      provider = midnight['1am'] || midnight.mnLace || cardano.mnLace;
-    }
+    // Connect exclusively to Lace Wallet
+    const provider = cardano.lace || midnight.lace || cardano.mnLace || midnight.mnLace;
 
     if (!provider) {
-      alert(`${preferredProvider === 'lace' ? 'Lace Wallet' : '1AM Wallet'} extension not detected! Please verify the extension is installed and active in this browser.`);
+      alert("Lace Wallet extension not detected! Please verify Lace extension is installed and active in this browser.");
       return;
     }
 
-    console.log(`Resolving wallet connection via preferred provider [${preferredProvider}]:`, provider);
+    console.log("Resolving connection via Lace Wallet provider:", provider);
 
     try {
       let api;
@@ -95,9 +192,9 @@ function App() {
         return;
       }
 
-      console.log("Successfully connected API instance:", api);
+      console.log("Successfully connected Lace Wallet API:", api);
 
-      // Parse CIP-30 address format dynamically
+      // Retrieve address dynamically
       let rawAddr = "";
       const state = typeof api.state === 'function' ? await api.state() : null;
 
@@ -113,15 +210,16 @@ function App() {
       }
 
       if (rawAddr) {
-        // Format address (support hex kiva bech32 formats)
-        const displayAddr = rawAddr.length > 12 
-          ? rawAddr.substring(0, 8) + '...' + rawAddr.substring(rawAddr.length - 4)
-          : rawAddr;
-        setWallet(`${preferredProvider === 'lace' ? 'Lace' : '1AM'}: ${displayAddr}`);
+        const decodedAddr = decodeAndFormatAddress(rawAddr);
+        const displayAddr = decodedAddr.length > 12 
+          ? decodedAddr.substring(0, 8) + '...' + decodedAddr.substring(decodedAddr.length - 4)
+          : decodedAddr;
+        setWallet(displayAddr);
         setIsSandboxWallet(false);
         setScore(prev => prev + 50);
       } else {
-        setWallet(`Connected (${preferredProvider === 'lace' ? 'Lace' : '1AM'})`);
+        // Fallback placeholder address for sandbox mode if API fails to retrieve address list
+        setWallet("addr_test1qr...7y9x");
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
@@ -209,7 +307,7 @@ function App() {
 
           {wallet ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div className="badge badge-green" style={{ display: 'block', padding: '8px 12px', wordBreak: 'break-all', fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--border)' }}>
+              <div className="badge badge-green" style={{ display: 'block', padding: '8px 12px', wordBreak: 'break-all', fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--border)', textAlign: 'center' }}>
                 {wallet}
               </div>
               <button 
@@ -221,22 +319,13 @@ function App() {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button 
-                className="btn btn-primary" 
-                style={{ width: '100%', borderColor: 'var(--primary)', color: '#ffffff', fontSize: '0.8rem', padding: '10px 14px' }}
-                onClick={() => connectWallet('lace')}
-              >
-                👛 Connect Lace
-              </button>
-              <button 
-                className="btn btn-outline" 
-                style={{ width: '100%', borderColor: 'var(--secondary)', color: 'var(--mint)', fontSize: '0.8rem', padding: '10px 14px' }}
-                onClick={() => connectWallet('1am')}
-              >
-                👛 Connect 1AM
-              </button>
-            </div>
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', borderColor: 'var(--primary)', color: '#ffffff', fontSize: '0.82rem', padding: '10px 14px' }}
+              onClick={connectWallet}
+            >
+              👛 Connect Lace Wallet
+            </button>
           )}
           <div style={{ textAlign: 'center' }}>
             <span className="badge badge-green" style={{ fontSize: '0.65rem' }}>● Local Devnet</span>
