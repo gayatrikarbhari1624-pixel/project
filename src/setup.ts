@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { resolveNetwork, setActiveNetwork, parseNetworkFlag } from './network';
 
 function run(cmd: string, args: string[]): void {
-  const r = spawnSync(cmd, args, { stdio: 'inherit', shell: false });
+  const r = spawnSync(cmd, args, { stdio: 'inherit', shell: true });
   if (r.status !== 0) {
     process.stderr.write(`\nCommand failed: ${cmd} ${args.join(' ')}\n`);
     process.exit(r.status ?? 1);
