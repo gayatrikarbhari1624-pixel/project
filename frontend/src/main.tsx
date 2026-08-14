@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  ZK Campus Vault — Privacy-Preserving Credentials & Identity Verification
- *  Theme: Ultra-Premium Sidebar SaaS Dashboard (Lace Wallet Exclusive)
+ *  ZK Campus Vault — All-in-One Privacy Credentials Suite
+ *  Theme: Ultra-Premium Space Violet SaaS Platform
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -37,7 +37,7 @@ const INITIAL_ACTIVITIES: Activity[] = [
   { circuit: 'prove_enrollment', type: 'ZK Proof Verified (Priya Deshmukh)', time: '12 min ago', block: 1012, status: 'REVOKED' },
 ];
 
-type Tab = 'guide' | 'student' | 'university' | 'employer' | 'explorer';
+type Tab = 'dashboard' | 'student' | 'university' | 'employer' | 'explorer';
 
 const DEPLOYED_CONTRACT = {
   address: "8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e",
@@ -46,7 +46,7 @@ const DEPLOYED_CONTRACT = {
 };
 
 function App() {
-  const [tab, setTab] = useState<Tab>('guide');
+  const [tab, setTab] = useState<Tab>('dashboard');
   const [wallet, setWallet] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
@@ -57,11 +57,10 @@ function App() {
     // @ts-ignore
     const cardano = window.cardano || {};
 
-    // Prioritize Lace preprod extensions
     const provider = cardano.lace || midnight.lace || cardano.mnLace || midnight.mnLace;
 
     if (!provider) {
-      alert("Lace Wallet extension not detected! Please ensure you have Lace installed and configured for Midnight Preprod network.");
+      alert("Lace Wallet extension not detected! Please ensure you have Lace installed.");
       return;
     }
 
@@ -78,7 +77,7 @@ function App() {
       }
 
       if (!api) {
-        alert("Wallet connection cancelled kiva failed.");
+        alert("Wallet connection failed.");
         return;
       }
 
@@ -100,7 +99,7 @@ function App() {
           : rawAddr;
         setWallet(displayAddr);
       } else {
-        setWallet("Lace Connected");
+        setWallet("Connected");
       }
     } catch (err: any) {
       console.error("Lace Wallet connection failed:", err);
@@ -150,25 +149,31 @@ function App() {
       <aside className="sidebar">
         <div>
           <div className="sidebar-brand">
-            <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))', padding: 10, borderRadius: 12, display: 'flex', boxShadow: '0 0 15px rgba(20, 184, 166, 0.3)' }}>
+            <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))', padding: 10, borderRadius: 12, display: 'flex', boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em' }} className="gradient-text">ZK Campus</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em' }} className="gradient-text">ZK Vault</h2>
               <p style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>MIDNIGHT PREPROD</p>
             </div>
           </div>
 
           <nav className="sidebar-nav">
             {([
-              ['guide', '📖 User Guide & Specs', '📚'],
-              ['student', '🎓 Student Vault', '👤'],
-              ['university', '🏛️ University Portal', '🏢'],
-              ['employer', '💼 Verifier Console', '🔍'],
-              ['explorer', '📊 Ledger Explorer', '📈'],
-            ] as [Tab, string, string][]).map(([key, label, emoji]) => (
+              ['dashboard', '📊 Control Panel', 'dashboard'],
+              ['student', '🎓 Student Vault', 'student'],
+              ['university', '🏛️ University Portal', 'university'],
+              ['employer', '💼 Verifier Console', 'employer'],
+              ['explorer', '⛓️ Ledger Explorer', 'explorer'],
+            ] as [Tab, string, string][]).map(([key, label]) => (
               <button key={key} className={`sidebar-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
-                <span style={{ fontSize: '1.1rem' }}>{emoji}</span>
+                <span style={{ fontSize: '1.1rem' }}>
+                  {key === 'dashboard' && '📊'}
+                  {key === 'student' && '🎓'}
+                  {key === 'university' && '🏛️'}
+                  {key === 'employer' && '💼'}
+                  {key === 'explorer' && '⛓️'}
+                </span>
                 <span>{label}</span>
               </button>
             ))}
@@ -193,29 +198,28 @@ function App() {
             </button>
           )}
           <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '4px 8px' }}>● Preprod Active</span>
+            <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '4px 8px' }}>● Preprod Network</span>
           </div>
         </div>
       </aside>
 
-      {/* Main Viewport */}
+      {/* Main Content Viewport */}
       <div className="main-wrapper">
         <main className="main-content fade-in">
-          {/* Active Contract Info Card */}
-          <div className="card" style={{ marginBottom: 28, padding: '16px 24px', background: 'linear-gradient(90deg, rgba(8,20,36,0.8), rgba(2,6,11,0.9))', borderColor: 'var(--border)' }}>
+          {/* Active Contract Info Banner */}
+          <div className="card" style={{ marginBottom: 28, padding: '16px 24px', background: 'linear-gradient(90deg, rgba(13,13,33,0.8), rgba(5,5,18,0.9))', borderColor: 'var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
               <div>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 2 }}>MIDNIGHT PREPROD CONTRACT ADDRESS</span>
                 <code style={{ color: 'var(--primary-light)', fontSize: '0.82rem', fontFamily: 'var(--font-code)', wordBreak: 'break-all' }}>{DEPLOYED_CONTRACT.address}</code>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>Groth16 ZKP verified</span>
-                <span className="badge" style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>v1.0.0</span>
+                <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>Groth16 ZKP Verified</span>
               </div>
             </div>
           </div>
 
-          {tab === 'guide' && <GuideTab />}
+          {tab === 'dashboard' && <DashboardTab onNavigate={setTab} wallet={wallet} onConnect={connectLaceWallet} />}
           {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
           {tab === 'university' && <UniversityTab students={students} onMint={handleMintStudent} onRevoke={handleRevokeStudent} />}
           {tab === 'employer' && <EmployerTab />}
@@ -231,53 +235,71 @@ function App() {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 1: User Guide & Specifications
+//  TAB 1: Dashboard Control Panel
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function GuideTab() {
+interface DashboardTabProps {
+  onNavigate: (t: Tab) => void;
+  wallet: string | null;
+  onConnect: () => void;
+}
+
+function DashboardTab({ onNavigate, wallet, onConnect }: DashboardTabProps) {
   return (
     <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(14, 165, 233, 0.15), rgba(20, 184, 166, 0.03))', padding: '48px 36px' }}>
-        <h2 style={{ fontSize: '2.2rem', marginBottom: 12, fontWeight: 800 }} className="gradient-text">Privacy Secured by Zero-Knowledge</h2>
-        <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.98rem', marginBottom: 20 }}>
-          Welcome to ZK Campus Vault. This platform allows universities, students, and employers to verify private credentials without leaking sensitive personal identifiers. Raw marks, GPA scores, and official registration numbers remain completely shielded inside client-side RAM.
-        </p>
+      {/* Welcome Banner */}
+      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.04))', padding: '48px 36px', border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <span className="badge" style={{ marginBottom: 12 }}>Academic Credentials Portal</span>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: 14, fontWeight: 800 }} className="gradient-text">Zero-Knowledge Student Identity</h2>
+            <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.98rem', marginBottom: 20 }}>
+              Verify student identity, qualifications, and threshold benchmarks without exposing private information on the blockchain. Fully integrated with Midnight's secure client-side cryptography.
+            </p>
+            <div className="flex-row">
+              <button className="btn btn-primary" onClick={() => onNavigate('student')}>🎓 Student Vault</button>
+              <button className="btn btn-outline" onClick={() => onNavigate('university')}>🏛️ University Portal</button>
+            </div>
+          </div>
+          <div style={{ flex: '1 1 180px', display: 'flex', justifyContent: 'center' }} className="aurora-pulse">
+            <span style={{ fontSize: '6.5rem', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.25))' }}>🛡️</span>
+          </div>
+        </div>
       </div>
 
-      <h3 style={{ fontSize: '1.25rem', marginTop: 14 }} className="gradient-text">How to Use the DApp</h3>
+      {/* Lace Wallet Status Notice */}
+      <div className="card" style={{ border: '1px solid var(--border-glow)', background: 'rgba(139, 92, 246, 0.03)' }}>
+        <h4 style={{ color: 'var(--secondary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>💡</span> Lace Wallet Popup Troubleshooting Notice
+        </h4>
+        <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
+          Lace Wallet operates on a persistent authorization protocol. If you click <strong>Connect Lace Wallet</strong> and the official authorization popup does not appear, the website is already authorized in your extension!
+        </p>
+        <div style={{ padding: '12px 16px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: 10, fontSize: '0.82rem', border: '1px solid rgba(255,255,255,0.02)' }}>
+          <strong>To force the popup again:</strong> Open Lace Wallet ⚙️ Settings ➜ Connected Sites ➜ Find <code>zk-campus-vault-d2sw.vercel.app</code> ➜ Click Disconnect/Delete ➜ Reload this page and click connect again.
+        </div>
+      </div>
+
+      {/* Platform Architecture */}
+      <h3 style={{ fontSize: '1.25rem', marginTop: 10 }} className="gradient-text">How it Works</h3>
       <div className="grid-3">
         <div className="card">
-          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Connect Lace Wallet</h4>
+          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Register Commitment</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Click the "Connect Lace Wallet" button in the sidebar. Confirm the Preprod testnet permissions popup in your Lace browser extension.
+            Universities publish a cryptographically secure 32-byte hash commitment of the student's credentials. Raw details remain local.
           </p>
         </div>
         <div className="card">
-          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. University Portal</h4>
+          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. Run Proving Circuit</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Universities can register a student's credential commitment hash. Only the 32-byte cryptographic commitment is published on-chain.
+            Students load their private credentials inside browser RAM and run local circuits to generate a verification proof.
           </p>
         </div>
         <div className="card">
-          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Generate ZK Proofs</h4>
+          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Verify Privately</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Go to the Student Vault. Set your minimum GPA threshold, run the local Groth16 circuit proving loop, and export the ZK Proof JSON.
+            Verifiers check the generated cryptographic proof against the on-chain commitment hash. The candidate's GPA/identity remains hidden.
           </p>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginTop: 14 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--primary-light)' }}>🛡️ The ZK Cryptographic Privacy Model ("Proven Without Shown")</h4>
-        <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
-          Our Compact Smart Contract checks if a student has registered credentials and verifies threshold queries (e.g. GPA &gt;= 3.50) without revealing the GPA value.
-        </p>
-        <div className="code-block" style={{ fontFamily: 'var(--font-code)', fontSize: '0.78rem', background: '#02060b' }}>
-          <span style={{ color: '#64748b' }}>// compact/campus_vault.compact logic snippet</span><br />
-          <span style={{ color: '#38bdf8' }}>export ledger</span> verifiedCommitments: Map&lt;Bytes[32], Cell&lt;Boolean&gt;&gt;;<br />
-          <span style={{ color: '#34d399' }}>export circuit</span> prove_gpa_threshold(witness gpa: Uint32, limit: Uint32): Boolean &#123;<br />
-          &nbsp;&nbsp;assert(gpa &gt;= limit);<br />
-          &nbsp;&nbsp;return true;<br />
-          &#125;
         </div>
       </div>
     </div>
@@ -330,7 +352,7 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
 
   return (
     <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(14, 165, 233, 0.05))' }}>
+      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.05))' }}>
         <h3 style={{ fontSize: '1.2rem', marginBottom: 6 }}>🎓 Student Credentials Vault</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
           Select a profile, configure verification parameters, and run local proof computations inside your browser.
@@ -539,7 +561,7 @@ function ExplorerTab({ activities }: { activities: Activity[] }) {
         <h4 style={{ fontSize: '1.05rem', marginBottom: 14 }}>⛓️ Recent Midnight Preprod Transactions</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {activities.map((tx, i) => (
-            <div key={i} className="flex-row" style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12, justifyContent: 'space-between', border: '1px solid var(--border)' }}>
+            <div key={i} className="flex-row" style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12, justifycontent: 'space-between', border: '1px solid var(--border)' }}>
               <div>
                 <strong style={{ fontSize: '0.88rem' }}>{tx.type}</strong>
                 <span className="badge" style={{ marginLeft: 8, fontSize: '0.68rem' }}>{tx.circuit}</span>
