@@ -48,7 +48,6 @@ const DEPLOYED_CONTRACT = {
 function App() {
   const [tab, setTab] = useState<Tab>('guide');
   const [wallet, setWallet] = useState<string | null>(null);
-  const [showConnectModal, setShowConnectModal] = useState<boolean>(false);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
 
@@ -188,7 +187,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={() => setShowConnectModal(true)}>
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet}>
               <span>👛</span>
               <strong>Connect Lace Wallet</strong>
             </button>
@@ -227,35 +226,6 @@ function App() {
           <strong>ZK Campus Vault</strong> • Built with Midnight.js SDK & Compact Cryptography Circuits • Preprod Integration Verified
         </footer>
       </div>
-
-      {/* Lace Connection Confirmation Modal Popup */}
-      {showConnectModal && (
-        <div className="modal-overlay">
-          <div className="modal-content fade-in">
-            <h3 style={{ fontSize: '1.25rem', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>👛</span> Connect Lace Wallet
-            </h3>
-            <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 20 }}>
-              Allow <strong>ZK Campus Vault</strong> to request your public keys and network status from the Lace Preprod extension? This authorizes cryptographic proof operations on Preprod.
-            </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }} onClick={() => setShowConnectModal(false)}>
-                Cancel
-              </button>
-              <button 
-                className="btn btn-primary" 
-                style={{ fontSize: '0.8rem', padding: '8px 16px' }} 
-                onClick={() => {
-                  setShowConnectModal(false);
-                  connectLaceWallet();
-                }}
-              >
-                Authorize Connection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
