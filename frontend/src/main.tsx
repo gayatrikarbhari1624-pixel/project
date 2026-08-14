@@ -53,7 +53,7 @@ function App() {
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
   const [score, setScore] = useState<number>(0);
 
-  const connectWallet = async () => {
+  const connectWallet = async (preferredProvider: 'lace' | '1am') => {
     // @ts-ignore
     const midnight = window.midnight || {};
     // @ts-ignore
@@ -64,21 +64,19 @@ function App() {
       return;
     }
 
-    const provider = 
-      midnight.lace || 
-      cardano.lace || 
-      midnight.mnLace || 
-      cardano.mnLace || 
-      midnight['1am'] || 
-      midnight[Object.keys(midnight)[0]] ||
-      cardano[Object.keys(cardano)[0]];
+    let provider = null;
+    if (preferredProvider === 'lace') {
+      provider = cardano.lace || midnight.lace || cardano.mnLace || midnight.mnLace;
+    } else {
+      provider = midnight['1am'] || midnight.mnLace || cardano.mnLace;
+    }
 
     if (!provider) {
-      alert("Lace kiva 1AM Wallet browser connector provider सापडला नाही!");
+      alert(`${preferredProvider === 'lace' ? 'Lace Wallet' : '1AM Wallet'} extension not detected! Please verify the extension is installed and active in this browser.`);
       return;
     }
 
-    console.log("Resolving wallet connection via provider:", provider);
+    console.log(`Resolving wallet connection via preferred provider [${preferredProvider}]:`, provider);
 
     try {
       let api;
@@ -119,11 +117,11 @@ function App() {
         const displayAddr = rawAddr.length > 12 
           ? rawAddr.substring(0, 8) + '...' + rawAddr.substring(rawAddr.length - 4)
           : rawAddr;
-        setWallet(displayAddr);
+        setWallet(`${preferredProvider === 'lace' ? 'Lace' : '1AM'}: ${displayAddr}`);
         setIsSandboxWallet(false);
         setScore(prev => prev + 50);
       } else {
-        setWallet("Connected (Lace)");
+        setWallet(`Connected (${preferredProvider === 'lace' ? 'Lace' : '1AM'})`);
         setIsSandboxWallet(false);
       }
     } catch (err: any) {
@@ -209,14 +207,37 @@ function App() {
             <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--mint)' }} className="sparkle-elem">{score} XP</div>
           </div>
 
-          <button 
-            className="btn btn-primary" 
-            style={{ width: '100%', borderColor: wallet ? 'var(--secondary)' : 'var(--primary)', color: wallet ? 'var(--mint)' : 'var(--primary-light)' }}
-            onClick={connectWallet}
-          >
-            <span>👛</span>
-            <span>{wallet ? wallet : 'Connect Wallet'}</span>
-          </button>
+          {wallet ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div className="badge badge-green" style={{ display: 'block', padding: '8px 12px', wordBreak: 'break-all', fontSize: '0.72rem', background: 'rgba(20, 184, 166, 0.1)', border: '1px solid var(--border)' }}>
+                {wallet}
+              </div>
+              <button 
+                className="btn btn-outline" 
+                style={{ width: '100%', borderColor: 'var(--rose)', color: 'var(--rose)', fontSize: '0.72rem', padding: '6px' }}
+                onClick={() => setWallet(null)}
+              >
+                Disconnect
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', borderColor: 'var(--primary)', color: '#ffffff', fontSize: '0.8rem', padding: '10px 14px' }}
+                onClick={() => connectWallet('lace')}
+              >
+                👛 Connect Lace
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ width: '100%', borderColor: 'var(--secondary)', color: 'var(--mint)', fontSize: '0.8rem', padding: '10px 14px' }}
+                onClick={() => connectWallet('1am')}
+              >
+                👛 Connect 1AM
+              </button>
+            </div>
+          )}
           <div style={{ textAlign: 'center' }}>
             <span className="badge badge-green" style={{ fontSize: '0.65rem' }}>● Local Devnet</span>
           </div>
