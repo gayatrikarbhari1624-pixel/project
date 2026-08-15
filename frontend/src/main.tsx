@@ -397,9 +397,25 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
   const [generating, setGenerating] = useState(false);
   const [step, setStep] = useState(0);
   const [proof, setProof] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
 
   const s = students[preset] || students[0];
-  const gpaPasses = parseFloat(s.gpa) >= parseFloat(minGpa);
+
+  // Editable local state fields
+  const [studentId, setStudentId] = useState(s.id);
+  const [degree, setDegree] = useState(s.degree);
+  const [gpa, setGpa] = useState(s.gpa);
+  const [name, setName] = useState(s.name);
+
+  React.useEffect(() => {
+    setStudentId(s.id);
+    setDegree(s.degree);
+    setGpa(s.gpa);
+    setName(s.name);
+    setProof(null);
+  }, [preset, s]);
+
+  const gpaPasses = parseFloat(gpa) >= parseFloat(minGpa);
 
   const generate = () => {
     setGenerating(true); setProof(null); setStep(1);
@@ -424,21 +440,27 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
           };
           setProof(finalProof);
           setGenerating(false);
-          onVerify(finalProof.circuit, s.name, gpaPasses);
+          onVerify(finalProof.circuit, name, gpaPasses);
         }, 500);
       }, 500);
     }, 500);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(JSON.stringify(proof, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="tab-view-container fade-in">
       <div className="glass-card" style={{ marginBottom: 20 }}>
         <h3 className="card-title">🎓 Student Credentials Vault</h3>
-        <p className="card-desc">Generate client-side ZK proof parameters locally before exporting.</p>
+        <p className="card-desc">Select a preset profile, kiva type your own custom student parameters to generate ZK proofs.</p>
         
         <div className="profile-selector-row">
           {students.map((st, i) => (
-            <button key={i} className={`profile-select-btn ${preset === i ? 'active' : ''}`} onClick={() => { setPreset(i); setProof(null); }}>
+            <button key={i} className={`profile-select-btn ${preset === i ? 'active' : ''}`} onClick={() => { setPreset(i); }}>
               <span>👤 {st.name}</span>
               {st.revoked && <span className="revocation-badge-x">Revoked</span>}
             </button>
@@ -448,19 +470,23 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
 
       <div className="info-grid-2">
         <div className="glass-card">
-          <h4 className="card-title" style={{ color: 'var(--primary-light)' }}>🔐 Shielded Private Witness</h4>
+          <h4 className="card-title" style={{ color: 'var(--primary-light)' }}>🔐 Shielded Private Witness (EDITABLE)</h4>
           <div className="form-column-inputs">
             <div className="input-group-row">
+              <label>Student Name</label>
+              <input className="glass-input-field" value={name} onChange={e => setName(e.target.value)} />
+            </div>
+            <div className="input-group-row">
               <label>Student Database ID</label>
-              <input className="glass-input-field" readOnly value={s.id} />
+              <input className="glass-input-field" value={studentId} onChange={e => setStudentId(e.target.value)} />
             </div>
             <div className="input-group-row">
               <label>Academic Degree Program</label>
-              <input className="glass-input-field" readOnly value={s.degree} />
+              <input className="glass-input-field" value={degree} onChange={e => setDegree(e.target.value)} />
             </div>
             <div className="input-group-row">
               <label>Current Cumulative GPA</label>
-              <input className="glass-input-field" readOnly value={s.gpa} />
+              <input className="glass-input-field" value={gpa} onChange={e => setGpa(e.target.value)} />
             </div>
           </div>
         </div>
@@ -497,10 +523,15 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
       )}
 
       {proof && (
-        <div className="glass-card proof-output-wrapper" style={{ marginTop: 20, borderColor: proof.privacy.status === 'VALID' ? 'var(--emerald)' : 'var(--rose)' }}>
-          <h4 className="proof-heading-status" style={{ color: proof.privacy.status === 'VALID' ? 'var(--mint)' : 'var(--rose)' }}>
-            {proof.privacy.status === 'VALID' ? '✓ ZK Proof Generated Successfully' : '✗ Target Limit Constraints Mismatch'}
-          </h4>
+        <div className="glass-card proof-output-wrapper" style={{ marginTop: 20, borderColor: proof.privacy.status === 'VALID' ? 'var(--emerald)' : 'var(--rose)', position: 'relative' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h4 className="proof-heading-status" style={{ color: proof.privacy.status === 'VALID' ? 'var(--mint)' : 'var(--rose)', margin: 0 }}>
+              {proof.privacy.status === 'VALID' ? '✓ ZK Proof Generated Successfully' : '✗ Target Limit Constraints Mismatch'}
+            </h4>
+            <button className="btn btn-outline" style={{ fontSize: '0.72rem', padding: '6px 12px' }} onClick={handleCopy}>
+              {copied ? '✓ Copied!' : '📋 Copy ZK Proof'}
+            </button>
+          </div>
           <div className="proof-json-code-box">
             <pre>{JSON.stringify(proof, null, 2)}</pre>
           </div>
@@ -610,6 +641,37 @@ function UniversityTab({ students, onMint, onRevoke }: UniversityTabProps) {
 //  TAB 4: Employer Verifier Console
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+function ConfettiEffect() {
+  const particles = Array.from({ length: 60 });
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 9999, overflow: 'hidden' }}>
+      {particles.map((_, i) => {
+        const left = Math.random() * 100;
+        const delay = Math.random() * 2.5;
+        const duration = 2 + Math.random() * 2;
+        const color = ['#6366f1', '#a855f7', '#10b981', '#34d399', '#f43f5e', '#fbbf24'][Math.floor(Math.random() * 6)];
+        const size = 6 + Math.random() * 8;
+        return (
+          <div 
+            key={i}
+            className="confetti-particle"
+            style={{
+              position: 'absolute',
+              top: -20,
+              left: `${left}%`,
+              width: size,
+              height: size,
+              background: color,
+              borderRadius: Math.random() > 0.5 ? '50%' : '0%',
+              animation: `confetti-fall ${duration}s linear ${delay}s infinite`
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function EmployerTab() {
   const [input, setInput] = useState('');
   const [verifying, setVerifying] = useState(false);
@@ -619,7 +681,7 @@ function EmployerTab() {
     e.preventDefault();
     setVerifying(true); setResult(null);
     setTimeout(() => {
-      const isFake = input.includes('TAMPERED') || input.includes('FAKE');
+      const isFake = input.includes('TAMPERED') || input.includes('FAKE') || input.trim() === '';
       setResult({
         valid: !isFake,
         text: isFake 
@@ -630,16 +692,32 @@ function EmployerTab() {
     }, 800);
   };
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setInput(text);
+    } catch (err) {
+      alert("Please allow clipboard permissions kiva manually paste.");
+    }
+  };
+
   return (
     <div className="tab-view-container fade-in">
+      {result && result.valid && <ConfettiEffect />}
+      
       <div className="glass-card">
-        <h3 className="card-title">🔍 Academic ZK Proof Verifier</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 className="card-title" style={{ margin: 0 }}>🔍 Academic ZK Proof Verifier</h3>
+          <button className="btn btn-outline" style={{ fontSize: '0.72rem', padding: '6px 12px' }} onClick={handlePaste}>
+            📋 Paste from Clipboard
+          </button>
+        </div>
         <p className="card-desc">Paste the student generated ZK proof JSON to verify commitment integrity.</p>
         
         <form onSubmit={verifyProof} className="form-column-inputs">
-          <textarea rows={6} className="glass-textarea-field" placeholder="Paste Proof JSON here..." required value={input} onChange={e => setInput(e.target.value)} />
+          <textarea rows={6} className="glass-textarea-field" placeholder="Paste Proof JSON here..." required value={input} onChange={e => setInput(e.target.value)} style={{ fontFamily: 'var(--font-code)', fontSize: '0.8rem' }} />
           <button type="submit" className="primary-action-btn-neon" disabled={verifying}>
-            {verifying ? 'Checking Verification Proof...' : '🔎 Run Cryptographic verification'}
+            {verifying ? 'Checking Verification Proof...' : '🔎 Run Cryptographic Verification'}
           </button>
         </form>
 
