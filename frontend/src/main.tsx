@@ -48,10 +48,13 @@ const DEPLOYED_CONTRACT = {
 function App() {
   const [tab, setTab] = useState<Tab>('guide');
   const [wallet, setWallet] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<boolean>(false);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
 
   const connectLaceWallet = async () => {
+    if (connecting) return;
+    
     // @ts-ignore
     const midnight = window.midnight || {};
     // @ts-ignore
@@ -65,6 +68,7 @@ function App() {
       return;
     }
 
+    setConnecting(true);
     console.log("Connecting directly to Lace Wallet DApp connector API...", provider);
 
     try {
@@ -79,6 +83,7 @@ function App() {
 
       if (!api) {
         alert("Wallet connection cancelled kiva failed.");
+        setConnecting(false);
         return;
       }
 
@@ -105,6 +110,8 @@ function App() {
     } catch (err: any) {
       console.error("Lace connection error:", err);
       alert(`Connection error: ${err.message || err}`);
+    } finally {
+      setConnecting(false);
     }
   };
 
@@ -187,9 +194,9 @@ function App() {
               </button>
             </div>
           ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet}>
-              <span>👛</span>
-              <strong>Connect Lace Wallet</strong>
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet} disabled={connecting}>
+              <span>{connecting ? '⏳' : '👛'}</span>
+              <strong>{connecting ? 'Connecting to Lace...' : 'Connect Lace Wallet'}</strong>
             </button>
           )}
           <div style={{ textAlign: 'center', marginTop: 10 }}>
