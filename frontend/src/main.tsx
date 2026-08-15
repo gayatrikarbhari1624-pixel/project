@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  ZK Campus Vault — All-in-One Privacy Credentials Suite
- *  Theme: Ultra-Premium Space Violet SaaS Platform
+ *  ZK Campus Vault — Privacy-Preserving Credentials & Identity Verification
+ *  Theme: Ultra-Premium Space SaaS Dashboard with Custom Popup Confirmation
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -37,7 +37,7 @@ const INITIAL_ACTIVITIES: Activity[] = [
   { circuit: 'prove_enrollment', type: 'ZK Proof Verified (Priya Deshmukh)', time: '12 min ago', block: 1012, status: 'REVOKED' },
 ];
 
-type Tab = 'dashboard' | 'student' | 'university' | 'employer' | 'explorer';
+type Tab = 'guide' | 'student' | 'university' | 'employer' | 'explorer';
 
 const DEPLOYED_CONTRACT = {
   address: "8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e",
@@ -46,12 +46,13 @@ const DEPLOYED_CONTRACT = {
 };
 
 function App() {
-  const [tab, setTab] = useState<Tab>('dashboard');
+  const [tab, setTab] = useState<Tab>('guide');
   const [wallet, setWallet] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
 
-  const connectLaceWallet = async () => {
+  const executeLaceConnection = async () => {
     // @ts-ignore
     const midnight = window.midnight || {};
     // @ts-ignore
@@ -64,8 +65,6 @@ function App() {
       return;
     }
 
-    console.log("Connecting directly to Lace Wallet DApp connector API...", provider);
-
     try {
       let api;
       if (typeof provider.enable === 'function') {
@@ -77,7 +76,7 @@ function App() {
       }
 
       if (!api) {
-        alert("Wallet connection failed.");
+        alert("Wallet connection cancelled kiva failed.");
         return;
       }
 
@@ -99,11 +98,11 @@ function App() {
           : rawAddr;
         setWallet(displayAddr);
       } else {
-        setWallet("Connected");
+        setWallet("Lace Connected");
       }
     } catch (err: any) {
-      console.error("Lace Wallet connection failed:", err);
-      alert(`Lace Connection Error: ${err.message || err}`);
+      console.error("Lace connection error:", err);
+      alert(`Connection error: ${err.message || err}`);
     }
   };
 
@@ -160,20 +159,14 @@ function App() {
 
           <nav className="sidebar-nav">
             {([
-              ['dashboard', '📊 Control Panel', 'dashboard'],
-              ['student', '🎓 Student Vault', 'student'],
-              ['university', '🏛️ University Portal', 'university'],
-              ['employer', '💼 Verifier Console', 'employer'],
-              ['explorer', '⛓️ Ledger Explorer', 'explorer'],
-            ] as [Tab, string, string][]).map(([key, label]) => (
+              ['guide', '📖 User Guide & Specs', '📚'],
+              ['student', '🎓 Student Vault', '👤'],
+              ['university', '🏛️ University Portal', '🏢'],
+              ['employer', '💼 Verifier Console', '🔍'],
+              ['explorer', '📊 Ledger Explorer', '📈'],
+            ] as [Tab, string, string][]).map(([key, label, emoji]) => (
               <button key={key} className={`sidebar-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
-                <span style={{ fontSize: '1.1rem' }}>
-                  {key === 'dashboard' && '📊'}
-                  {key === 'student' && '🎓'}
-                  {key === 'university' && '🏛️'}
-                  {key === 'employer' && '💼'}
-                  {key === 'explorer' && '⛓️'}
-                </span>
+                <span style={{ fontSize: '1.1rem' }}>{emoji}</span>
                 <span>{label}</span>
               </button>
             ))}
@@ -187,39 +180,40 @@ function App() {
                 <span style={{ fontSize: '0.65rem', color: 'var(--mint)', display: 'block', fontWeight: 700, marginBottom: 4 }}>✓ LACE CONNECTED</span>
                 <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-code)', color: 'var(--text)' }}>{wallet}</span>
               </div>
-              <button className="btn" style={{ width: '100%', background: 'rgba(244, 63, 94, 0.1)', color: 'var(--rose)', border: '1px solid rgba(244, 63, 94, 0.2)', fontSize: '0.78rem', padding: '8px' }} onClick={() => setWallet(null)}>
+              <button className="btn btn-outline" style={{ width: '100%', borderColor: 'var(--rose)', color: 'var(--rose)', fontSize: '0.78rem', padding: '8px', justifyContent: 'center' }} onClick={() => setWallet(null)}>
                 Disconnect Wallet
               </button>
             </div>
           ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet}>
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={() => setShowConfirmModal(true)}>
               <span>👛</span>
               <strong>Connect Lace Wallet</strong>
             </button>
           )}
           <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '4px 8px' }}>● Preprod Network</span>
+            <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '4px 8px' }}>● Preprod Active</span>
           </div>
         </div>
       </aside>
 
-      {/* Main Content Viewport */}
+      {/* Main Viewport */}
       <div className="main-wrapper">
         <main className="main-content fade-in">
-          {/* Active Contract Info Banner */}
-          <div className="card" style={{ marginBottom: 28, padding: '16px 24px', background: 'linear-gradient(90deg, rgba(13,13,33,0.8), rgba(5,5,18,0.9))', borderColor: 'var(--border)' }}>
+          {/* Active Contract Info Card */}
+          <div className="card" style={{ marginBottom: 28, padding: '16px 24px', background: 'linear-gradient(90deg, rgba(8,20,36,0.8), rgba(2,6,11,0.9))', borderColor: 'var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
               <div>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 2 }}>MIDNIGHT PREPROD CONTRACT ADDRESS</span>
                 <code style={{ color: 'var(--primary-light)', fontSize: '0.82rem', fontFamily: 'var(--font-code)', wordBreak: 'break-all' }}>{DEPLOYED_CONTRACT.address}</code>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>Groth16 ZKP Verified</span>
+                <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>Groth16 ZKP verified</span>
+                <span className="badge" style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>v1.0.0</span>
               </div>
             </div>
           </div>
 
-          {tab === 'dashboard' && <DashboardTab onNavigate={setTab} wallet={wallet} onConnect={connectLaceWallet} />}
+          {tab === 'guide' && <GuideTab />}
           {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
           {tab === 'university' && <UniversityTab students={students} onMint={handleMintStudent} onRevoke={handleRevokeStudent} />}
           {tab === 'employer' && <EmployerTab />}
@@ -230,76 +224,107 @@ function App() {
           <strong>ZK Campus Vault</strong> • Built with Midnight.js SDK & Compact Cryptography Circuits • Preprod Integration Verified
         </footer>
       </div>
+
+      {/* Freighter/Lace Style Premium Confirmation Modal Popup */}
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal-content fade-in" style={{ border: '1px solid var(--border-glow)', background: 'var(--bg-glass)', color: '#fff', borderRadius: '18px', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
+            {/* Modal Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(99, 102, 241, 0.05)' }}>
+              <div style={{ background: 'var(--primary)', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '1.2rem' }}>🔑</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Connection Request</h3>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Lace DApp Connector API</span>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', marginBottom: 18, textAlign: 'center' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origin Request</span>
+                <strong style={{ fontSize: '0.88rem', color: 'var(--primary-light)', display: 'block', wordBreak: 'break-all' }}>https://zk-campus-vault-d2sw.vercel.app</strong>
+              </div>
+
+              <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>Requested Permissions:</h4>
+              <ul style={{ paddingLeft: '20px', fontSize: '0.84rem', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: 8, lineHeight: 1.4, marginBottom: 20 }}>
+                <li>Read your public preprod wallet address.</li>
+                <li>Request transaction signatures for zero-knowledge proving.</li>
+                <li>Query active smart contract state commitments.</li>
+              </ul>
+
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
+                <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '8px 16px', flex: 1, justifyContent: 'center' }} onClick={() => setShowConfirmModal(false)}>
+                  Reject
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ fontSize: '0.82rem', padding: '8px 16px', flex: 1, justifyContent: 'center' }} 
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    executeLaceConnection();
+                  }}
+                >
+                  Confirm Connect
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 1: Dashboard Control Panel
+//  TAB 1: User Guide & Specifications
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-interface DashboardTabProps {
-  onNavigate: (t: Tab) => void;
-  wallet: string | null;
-  onConnect: () => void;
-}
-
-function DashboardTab({ onNavigate, wallet, onConnect }: DashboardTabProps) {
+function GuideTab() {
   return (
     <div className="flex-col fade-in">
-      {/* Welcome Banner */}
-      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.04))', padding: '48px 36px', border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
-          <div style={{ flex: '1 1 500px' }}>
-            <span className="badge" style={{ marginBottom: 12 }}>Academic Credentials Portal</span>
-            <h2 style={{ fontSize: '2.5rem', marginBottom: 14, fontWeight: 800 }} className="gradient-text">Zero-Knowledge Student Identity</h2>
-            <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.98rem', marginBottom: 20 }}>
-              Verify student identity, qualifications, and threshold benchmarks without exposing private information on the blockchain. Fully integrated with Midnight's secure client-side cryptography.
-            </p>
-            <div className="flex-row">
-              <button className="btn btn-primary" onClick={() => onNavigate('student')}>🎓 Student Vault</button>
-              <button className="btn btn-outline" onClick={() => onNavigate('university')}>🏛️ University Portal</button>
-            </div>
-          </div>
-          <div style={{ flex: '1 1 180px', display: 'flex', justifyContent: 'center' }} className="aurora-pulse">
-            <span style={{ fontSize: '6.5rem', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.25))' }}>🛡️</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Lace Wallet Status Notice */}
-      <div className="card" style={{ border: '1px solid var(--border-glow)', background: 'rgba(139, 92, 246, 0.03)' }}>
-        <h4 style={{ color: 'var(--secondary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>💡</span> Lace Wallet Popup Troubleshooting Notice
-        </h4>
-        <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
-          Lace Wallet operates on a persistent authorization protocol. If you click <strong>Connect Lace Wallet</strong> and the official authorization popup does not appear, the website is already authorized in your extension!
+      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.04))', padding: '48px 36px' }}>
+        <h2 style={{ fontSize: '2.2rem', marginBottom: 12, fontWeight: 800 }} className="gradient-text">Privacy Secured by Zero-Knowledge</h2>
+        <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.98rem', marginBottom: 20 }}>
+          Welcome to ZK Campus Vault. This platform allows universities, students, and employers to verify private credentials without leaking sensitive personal identifiers. Raw marks, GPA scores, and official registration numbers remain completely shielded inside client-side RAM.
         </p>
-        <div style={{ padding: '12px 16px', background: 'rgba(0, 0, 0, 0.2)', borderRadius: 10, fontSize: '0.82rem', border: '1px solid rgba(255,255,255,0.02)' }}>
-          <strong>To force the popup again:</strong> Open Lace Wallet ⚙️ Settings ➜ Connected Sites ➜ Find <code>zk-campus-vault-d2sw.vercel.app</code> ➜ Click Disconnect/Delete ➜ Reload this page and click connect again.
-        </div>
       </div>
 
-      {/* Platform Architecture */}
-      <h3 style={{ fontSize: '1.25rem', marginTop: 10 }} className="gradient-text">How it Works</h3>
+      <h3 style={{ fontSize: '1.25rem', marginTop: 14 }} className="gradient-text">How to Use the DApp</h3>
       <div className="grid-3">
         <div className="card">
-          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Register Commitment</h4>
+          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Connect Lace Wallet</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Universities publish a cryptographically secure 32-byte hash commitment of the student's credentials. Raw details remain local.
+            Click the "Connect Lace Wallet" button in the sidebar. Confirm the Preprod testnet permissions popup in your Lace browser extension.
           </p>
         </div>
         <div className="card">
-          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. Run Proving Circuit</h4>
+          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. University Portal</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Students load their private credentials inside browser RAM and run local circuits to generate a verification proof.
+            Universities can register a student's credential commitment hash. Only the 32-byte cryptographic commitment is published on-chain.
           </p>
         </div>
         <div className="card">
-          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Verify Privately</h4>
+          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Generate ZK Proofs</h4>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Verifiers check the generated cryptographic proof against the on-chain commitment hash. The candidate's GPA/identity remains hidden.
+            Go to the Student Vault. Set your minimum GPA threshold, run the local Groth16 circuit proving loop, and export the ZK Proof JSON.
           </p>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 14 }}>
+        <h4 style={{ marginBottom: 12, color: 'var(--primary-light)' }}>🛡️ The ZK Cryptographic Privacy Model ("Proven Without Shown")</h4>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
+          Our Compact Smart Contract checks if a student has registered credentials and verifies threshold queries (e.g. GPA &gt;= 3.50) without revealing the GPA value.
+        </p>
+        <div className="code-block" style={{ fontFamily: 'var(--font-code)', fontSize: '0.78rem', background: '#02060b' }}>
+          <span style={{ color: '#64748b' }}>// compact/campus_vault.compact logic snippet</span><br />
+          <span style={{ color: '#38bdf8' }}>export ledger</span> verifiedCommitments: Map&lt;Bytes[32], Cell&lt;Boolean&gt;&gt;;<br />
+          <span style={{ color: '#34d399' }}>export circuit</span> prove_gpa_threshold(witness gpa: Uint32, limit: Uint32): Boolean &#123;<br />
+          &nbsp;&nbsp;assert(gpa &gt;= limit);<br />
+          &nbsp;&nbsp;return true;<br />
+          &#125;
         </div>
       </div>
     </div>
