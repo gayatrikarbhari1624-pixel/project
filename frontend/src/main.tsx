@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — Privacy-Preserving Credentials & Identity Verification
- *  Theme: Ultra-Premium Space SaaS Dashboard (Lace Wallet Direct Sync)
+ *  Theme: Futuristic Top-Nav Space SaaS Dashboard with Rich Wallpaper Backgrounds
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -152,87 +152,92 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
-        <div>
-          <div className="sidebar-brand">
-            <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))', padding: 10, borderRadius: 12, display: 'flex', boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+    <div className="layout-root">
+      {/* Dynamic Cosmic Mesh Particles Backdrop */}
+      <div className="mesh-gradient-backdrop"></div>
+
+      {/* Top Navbar */}
+      <header className="top-navbar">
+        <div className="nav-container">
+          <div className="brand-group">
+            <div className="brand-logo-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em' }} className="gradient-text">ZK Vault</h2>
-              <p style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em' }}>MIDNIGHT PREPROD</p>
+              <span className="brand-title">ZK Vault</span>
+              <span className="brand-badge">Preprod</span>
             </div>
           </div>
 
-          <nav className="sidebar-nav">
+          {/* Navigation Links */}
+          <nav className="nav-tabs-list">
             {([
-              ['guide', '📖 User Guide & Specs', '📚'],
+              ['guide', '📚 Specs & Guide', '📚'],
               ['student', '🎓 Student Vault', '👤'],
-              ['university', '🏛️ University Portal', '🏢'],
-              ['employer', '💼 Verifier Console', '🔍'],
+              ['university', '🏛️ Registrar Portal', '🏢'],
+              ['employer', '🔍 Verifier Console', '🔎'],
               ['explorer', '📊 Ledger Explorer', '📈'],
             ] as [Tab, string, string][]).map(([key, label, emoji]) => (
-              <button key={key} className={`sidebar-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
-                <span style={{ fontSize: '1.1rem' }}>{emoji}</span>
-                <span>{label}</span>
+              <button key={key} className={`nav-tab-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
+                <span style={{ marginRight: 6 }}>{emoji}</span>
+                {label}
               </button>
             ))}
           </nav>
-        </div>
 
-        <div className="sidebar-footer">
-          {wallet ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div className="card" style={{ padding: '12px', background: 'rgba(52, 211, 153, 0.05)', border: '1px solid rgba(52, 211, 153, 0.2)', textAlign: 'center', borderRadius: 12 }}>
-                <span style={{ fontSize: '0.65rem', color: 'var(--mint)', display: 'block', fontWeight: 700, marginBottom: 4 }}>✓ LACE CONNECTED</span>
-                <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-code)', color: 'var(--text)' }}>{wallet}</span>
+          {/* Wallet Actions */}
+          <div className="nav-wallet-group">
+            {wallet ? (
+              <div className="wallet-connected-badge">
+                <span className="dot-active">●</span>
+                <span className="wallet-addr-text">{wallet}</span>
+                <button className="disconnect-x-btn" onClick={() => setWallet(null)} title="Disconnect Wallet">×</button>
               </div>
-              <button className="btn btn-outline" style={{ width: '100%', borderColor: 'var(--rose)', color: 'var(--rose)', fontSize: '0.78rem', padding: '8px', justifyContent: 'center' }} onClick={() => setWallet(null)}>
-                Disconnect Wallet
+            ) : (
+              <button className="connect-wallet-nav-btn" onClick={connectLaceWallet} disabled={connecting}>
+                {connecting ? '⏳ Connecting...' : '👛 Connect Lace'}
               </button>
-            </div>
-          ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet} disabled={connecting}>
-              <span>{connecting ? '⏳' : '👛'}</span>
-              <strong>{connecting ? 'Connecting to Lace...' : 'Connect Lace Wallet'}</strong>
-            </button>
-          )}
-          <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <span className="badge badge-green" style={{ fontSize: '0.65rem', padding: '4px 8px' }}>● Preprod Active</span>
+            )}
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Viewport */}
-      <div className="main-wrapper">
-        <main className="main-content fade-in">
-          {/* Active Contract Info Card */}
-          <div className="card" style={{ marginBottom: 28, padding: '16px 24px', background: 'linear-gradient(90deg, rgba(8,20,36,0.8), rgba(2,6,11,0.9))', borderColor: 'var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-              <div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 2 }}>MIDNIGHT PREPROD CONTRACT ADDRESS</span>
-                <code style={{ color: 'var(--primary-light)', fontSize: '0.82rem', fontFamily: 'var(--font-code)', wordBreak: 'break-all' }}>{DEPLOYED_CONTRACT.address}</code>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>Groth16 ZKP verified</span>
-                <span className="badge" style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>v1.0.0</span>
-              </div>
+      {/* Hero Section with Beautiful Background Wallpaper image */}
+      <section className="dashboard-hero-section">
+        <div className="hero-overlay"></div>
+        <div className="hero-content-container">
+          <h1 className="hero-main-title">Zero-Knowledge Student Identity</h1>
+          <p className="hero-subtitle">Verify academic achievements, enrollment status, and degree credentials on-chain without exposing private GPA details.</p>
+          
+          <div className="hero-info-row">
+            <div className="info-pill">
+              <span className="pill-label">Active Contract:</span>
+              <code className="pill-code">{DEPLOYED_CONTRACT.address}</code>
+            </div>
+            <div className="info-pill">
+              <span className="pill-label">ZKP Circuit:</span>
+              <span className="pill-val">Groth16 Verifier</span>
             </div>
           </div>
+        </div>
+      </section>
 
-          {tab === 'guide' && <GuideTab />}
-          {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
-          {tab === 'university' && <UniversityTab students={students} onMint={handleMintStudent} onRevoke={handleRevokeStudent} />}
-          {tab === 'employer' && <EmployerTab />}
-          {tab === 'explorer' && <ExplorerTab activities={activities} />}
-        </main>
+      {/* Main Content Area */}
+      <main className="dashboard-main-viewport">
+        {tab === 'guide' && <GuideTab />}
+        {tab === 'student' && <StudentTab students={students} onVerify={handleAddVerificationActivity} />}
+        {tab === 'university' && <UniversityTab students={students} onMint={handleMintStudent} onRevoke={handleRevokeStudent} />}
+        {tab === 'employer' && <EmployerTab />}
+        {tab === 'explorer' && <ExplorerTab activities={activities} />}
+      </main>
 
-        <footer className="footer-bar">
-          <strong>ZK Campus Vault</strong> • Built with Midnight.js SDK & Compact Cryptography Circuits • Preprod Integration Verified
-        </footer>
-      </div>
+      {/* Footer */}
+      <footer className="dashboard-global-footer">
+        <div className="footer-content">
+          <span><strong>ZK Campus Vault v2.0</strong> • Secured by Midnight.js Protocol SDK</span>
+          <span className="badge badge-green">● Preprod Network Online</span>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -243,48 +248,57 @@ function App() {
 
 function GuideTab() {
   return (
-    <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.04))', padding: '48px 36px' }}>
-        <h2 style={{ fontSize: '2.2rem', marginBottom: 12, fontWeight: 800 }} className="gradient-text">Privacy Secured by Zero-Knowledge</h2>
-        <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '0.98rem', marginBottom: 20 }}>
-          Welcome to ZK Campus Vault. This platform allows universities, students, and employers to verify private credentials without leaking sensitive personal identifiers. Raw marks, GPA scores, and official registration numbers remain completely shielded inside client-side RAM.
-        </p>
+    <div className="tab-view-container fade-in">
+      <div className="info-grid-2">
+        <div className="glass-card featured-guide-card">
+          <h2 className="section-title">🛡️ Cryptographic Integrity & Zero-Knowledge Verification</h2>
+          <p className="card-desc">
+            ZK Campus Vault utilizes client-side zero-knowledge proof generation to allow third-party verification of academic records. By compiling local Compact circuits, students can prove statements (e.g. GPA threshold passing) without disclosing the exact score or their registration numbers.
+          </p>
+          <div className="features-checklist-box">
+            <div className="check-item">✔️ Real-time Lace Preprod DApp authorization connector</div>
+            <div className="check-item">✔️ Private credential commitment hashing on-chain</div>
+            <div className="check-item">✔️ local client proving using Groth16 cryptographic engine</div>
+          </div>
+        </div>
+
+        <div className="glass-card">
+          <h3 className="card-title">📖 Compact Smart Contract Verification Schema</h3>
+          <p className="card-desc">Below is the core proof definition verified by the Midnight preprod ledger:</p>
+          <div className="code-editor-box">
+            <span className="code-comment">// campus_vault.compact logic snippet</span><br />
+            <span className="code-keyword">export ledger</span> commitments: Map&lt;Bytes[32], Cell&lt;Boolean&gt;&gt;;<br /><br />
+            <span className="code-keyword">export circuit</span> prove_gpa_threshold(witness gpa: Uint32, limit: Uint32): Boolean &#123;<br />
+            &nbsp;&nbsp;assert(gpa &gt;= limit);<br />
+            &nbsp;&nbsp;return true;<br />
+            &#125;
+          </div>
+        </div>
       </div>
 
-      <h3 style={{ fontSize: '1.25rem', marginTop: 14 }} className="gradient-text">How to Use the DApp</h3>
-      <div className="grid-3">
-        <div className="card">
-          <h4 style={{ color: 'var(--primary-light)', marginBottom: 8 }}>1. Connect Lace Wallet</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Click the "Connect Lace Wallet" button in the sidebar. Confirm the Preprod testnet permissions popup in your Lace browser extension.
-          </p>
-        </div>
-        <div className="card">
-          <h4 style={{ color: 'var(--mint)', marginBottom: 8 }}>2. University Portal</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Universities can register a student's credential commitment hash. Only the 32-byte cryptographic commitment is published on-chain.
-          </p>
-        </div>
-        <div className="card">
-          <h4 style={{ color: 'var(--secondary)', marginBottom: 8 }}>3. Generate ZK Proofs</h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            Go to the Student Vault. Set your minimum GPA threshold, run the local Groth16 circuit proving loop, and export the ZK Proof JSON.
-          </p>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginTop: 14 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--primary-light)' }}>🛡️ The ZK Cryptographic Privacy Model ("Proven Without Shown")</h4>
-        <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
-          Our Compact Smart Contract checks if a student has registered credentials and verifies threshold queries (e.g. GPA &gt;= 3.50) without revealing the GPA value.
-        </p>
-        <div className="code-block" style={{ fontFamily: 'var(--font-code)', fontSize: '0.78rem', background: '#02060b' }}>
-          <span style={{ color: '#64748b' }}>// compact/campus_vault.compact logic snippet</span><br />
-          <span style={{ color: '#38bdf8' }}>export ledger</span> verifiedCommitments: Map&lt;Bytes[32], Cell&lt;Boolean&gt;&gt;;<br />
-          <span style={{ color: '#34d399' }}>export circuit</span> prove_gpa_threshold(witness gpa: Uint32, limit: Uint32): Boolean &#123;<br />
-          &nbsp;&nbsp;assert(gpa &gt;= limit);<br />
-          &nbsp;&nbsp;return true;<br />
-          &#125;
+      <div className="glass-card" style={{ marginTop: 24 }}>
+        <h3 className="card-title">💡 How to Demonstrate the Demo</h3>
+        <div className="demo-steps-grid">
+          <div className="step-card-tile">
+            <span className="step-num">01</span>
+            <h4>Connect</h4>
+            <p>Click "Connect Lace" in the top navbar and authenticate Preprod network access.</p>
+          </div>
+          <div className="step-card-tile">
+            <span className="step-num">02</span>
+            <h4>Mint</h4>
+            <p>Go to the Registrar Portal, enter student parameters, and publish the commitment hash.</p>
+          </div>
+          <div className="step-card-tile">
+            <span className="step-num">03</span>
+            <h4>Prove</h4>
+            <p>Open Student Vault, select the student, set target GPA limit, and run ZK Proving loop.</p>
+          </div>
+          <div className="step-card-tile">
+            <span className="step-num">04</span>
+            <h4>Verify</h4>
+            <p>Copy the proof JSON to the Verifier Console and check validation result status.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -336,70 +350,79 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
   };
 
   return (
-    <div className="flex-col fade-in">
-      <div className="card" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.05))' }}>
-        <h3 style={{ fontSize: '1.2rem', marginBottom: 6 }}>🎓 Student Credentials Vault</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          Select a profile, configure verification parameters, and run local proof computations inside your browser.
-        </p>
+    <div className="tab-view-container fade-in">
+      <div className="glass-card" style={{ marginBottom: 20 }}>
+        <h3 className="card-title">🎓 Student Credentials Vault</h3>
+        <p className="card-desc">Generate client-side ZK proof parameters locally before exporting.</p>
+        
+        <div className="profile-selector-row">
+          {students.map((st, i) => (
+            <button key={i} className={`profile-select-btn ${preset === i ? 'active' : ''}`} onClick={() => { setPreset(i); setProof(null); }}>
+              <span>👤 {st.name}</span>
+              {st.revoked && <span className="revocation-badge-x">Revoked</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex-row">
-        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Profile:</span>
-        {students.map((st, i) => (
-          <button key={i} className={`btn btn-outline ${preset === i ? 'active' : ''}`} style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={() => { setPreset(i); setProof(null); }}>
-            {st.name} {st.revoked && '🚫'}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid-2">
-        <div className="card">
-          <h4 style={{ fontSize: '0.94rem', marginBottom: 14, color: 'var(--primary-light)' }}>🔐 Shielded Witness (Private Inputs)</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div><span className="label">Student ID</span><input className="input" readOnly value={s.id} /></div>
-            <div><span className="label">Program</span><input className="input" readOnly value={s.degree} /></div>
-            <div><span className="label">Cumulative GPA</span><input className="input" readOnly value={s.gpa} /></div>
+      <div className="info-grid-2">
+        <div className="glass-card">
+          <h4 className="card-title" style={{ color: 'var(--primary-light)' }}>🔐 Shielded Private Witness</h4>
+          <div className="form-column-inputs">
+            <div className="input-group-row">
+              <label>Student Database ID</label>
+              <input className="glass-input-field" readOnly value={s.id} />
+            </div>
+            <div className="input-group-row">
+              <label>Academic Degree Program</label>
+              <input className="glass-input-field" readOnly value={s.degree} />
+            </div>
+            <div className="input-group-row">
+              <label>Current Cumulative GPA</label>
+              <input className="glass-input-field" readOnly value={s.gpa} />
+            </div>
           </div>
         </div>
 
-        <div className="card">
-          <h4 style={{ fontSize: '0.94rem', marginBottom: 14, color: 'var(--secondary)' }}>✨ Proving Constraints Configuration</h4>
-          <div className="flex-row" style={{ marginBottom: 12 }}>
-            <button className={`btn btn-outline ${proofType === 'gpa' ? 'active' : ''}`} style={{ flex: 1, fontSize: '0.75rem', padding: '6px' }} onClick={() => setProofType('gpa')}>GPA Limit</button>
-            <button className={`btn btn-outline ${proofType === 'enrollment' ? 'active' : ''}`} style={{ flex: 1, fontSize: '0.75rem', padding: '6px' }} onClick={() => setProofType('enrollment')}>Active Enrollment</button>
+        <div className="glass-card">
+          <h4 className="card-title" style={{ color: 'var(--secondary)' }}>⚙️ Verification Parameters</h4>
+          <div className="verification-toggle-row">
+            <button className={`toggle-pill-btn ${proofType === 'gpa' ? 'active' : ''}`} onClick={() => setProofType('gpa')}>GPA Limit</button>
+            <button className={`toggle-pill-btn ${proofType === 'enrollment' ? 'active' : ''}`} onClick={() => setProofType('enrollment')}>Active Enrollment</button>
           </div>
 
           {proofType === 'gpa' && (
-            <div style={{ marginBottom: 12 }}>
-              <span className="label">Required GPA Limit:</span>
-              <div className="flex-row">
-                <input type="range" min="2.00" max="4.00" step="0.05" value={minGpa} onChange={e => setMinGpa(e.target.value)} style={{ flex: 1, accentColor: 'var(--secondary)' }} />
-                <strong style={{ color: 'var(--mint)', fontSize: '1.1rem' }}>{minGpa}</strong>
-              </div>
+            <div className="slider-control-box">
+              <label className="slider-label-row">
+                <span>Minimum Required GPA:</span>
+                <strong>{minGpa}</strong>
+              </label>
+              <input type="range" min="2.00" max="4.00" step="0.05" value={minGpa} onChange={e => setMinGpa(e.target.value)} className="gpa-range-slider" />
             </div>
           )}
 
-          <button className="btn btn-primary" disabled={generating || s.revoked} onClick={generate} style={{ width: '100%', justifyContent: 'center' }}>
-            {s.revoked ? '🚫 Commitment Revoked' : generating ? `Computing ZK Proof (${step}/3)...` : '⚡ Generate ZK Proof'}
+          <button className="primary-action-btn-neon" disabled={generating || s.revoked} onClick={generate}>
+            {s.revoked ? '🚫 Cannot Prove (Revoked)' : generating ? 'Computing Cryptographic Witness...' : '⚡ Generate ZK Proof'}
           </button>
         </div>
       </div>
 
       {generating && (
-        <div className="card flex-row" style={{ justifyContent: 'space-around', background: 'rgba(0,0,0,0.2)' }}>
-          <div className="flex-row" style={{ opacity: step >= 1 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--primary)' }}>1</div><span style={{ fontSize: '0.8rem' }}>Generating Witness</span></div>
-          <div className="flex-row" style={{ opacity: step >= 2 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--secondary)' }}>2</div><span style={{ fontSize: '0.8rem' }}>Computing constraints</span></div>
-          <div className="flex-row" style={{ opacity: step >= 3 ? 1 : 0.3 }}><div className="step-circle" style={{ background: 'var(--emerald)' }}>3</div><span style={{ fontSize: '0.8rem' }}>ZKP output JSON</span></div>
+        <div className="glass-card loading-steps-tracker" style={{ marginTop: 20 }}>
+          <div className={`track-step ${step >= 1 ? 'done' : ''}`}>1. Parse Witness</div>
+          <div className={`track-step ${step >= 2 ? 'done' : ''}`}>2. Evaluate Constraints</div>
+          <div className={`track-step ${step >= 3 ? 'done' : ''}`}>3. Export ZK Proof JSON</div>
         </div>
       )}
 
       {proof && (
-        <div className="card" style={{ borderColor: proof.privacy.status === 'VALID' ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)' }}>
-          <h4 style={{ color: proof.privacy.status === 'VALID' ? 'var(--mint)' : 'var(--rose)', marginBottom: 8 }}>
-            {proof.privacy.status === 'VALID' ? '✅ ZK Proof Computed Successfully!' : '❌ Proving Constraints Unsatisfied'}
+        <div className="glass-card proof-output-wrapper" style={{ marginTop: 20, borderColor: proof.privacy.status === 'VALID' ? 'var(--emerald)' : 'var(--rose)' }}>
+          <h4 className="proof-heading-status" style={{ color: proof.privacy.status === 'VALID' ? 'var(--mint)' : 'var(--rose)' }}>
+            {proof.privacy.status === 'VALID' ? '✓ ZK Proof Generated Successfully' : '✗ Target Limit Constraints Mismatch'}
           </h4>
-          <div className="code-block"><pre style={{ margin: 0 }}>{JSON.stringify(proof, null, 2)}</pre></div>
+          <div className="proof-json-code-box">
+            <pre>{JSON.stringify(proof, null, 2)}</pre>
+          </div>
         </div>
       )}
     </div>
@@ -407,7 +430,7 @@ function StudentTab({ students, onVerify }: { students: Student[], onVerify: (ci
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 3: University Portal
+//  TAB 3: University Registrar Portal
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 interface UniversityTabProps {
@@ -437,46 +460,61 @@ function UniversityTab({ students, onMint, onRevoke }: UniversityTabProps) {
   };
 
   return (
-    <div className="flex-col fade-in">
-      <div className="grid-2">
-        <div className="card">
-          <h4 style={{ fontSize: '1rem', marginBottom: 12 }}>🏛️ Issue New Digital Credential</h4>
-          <form onSubmit={handleIssue} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div><span className="label">Name</span><input className="input" required value={name} onChange={e => setName(e.target.value)} /></div>
-            <div><span className="label">Student ID</span><input className="input" required value={sid} onChange={e => setSid(e.target.value)} /></div>
-            <div><span className="label">Degree</span><input className="input" required value={degree} onChange={e => setDegree(e.target.value)} /></div>
-            <div className="grid-2" style={{ gap: 8 }}>
-              <div><span className="label">Code</span><input className="input" required value={code} onChange={e => setCode(e.target.value)} /></div>
-              <div><span className="label">GPA</span><input className="input" required value={gpa} onChange={e => setGpa(e.target.value)} /></div>
+    <div className="tab-view-container fade-in">
+      <div className="info-grid-2">
+        <div className="glass-card">
+          <h3 className="card-title">🏛️ Issue Student Identity Commitment</h3>
+          <form onSubmit={handleIssue} className="form-column-inputs">
+            <div className="input-group-row">
+              <label>Full Name</label>
+              <input className="glass-input-field" required value={name} onChange={e => setName(e.target.value)} />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={issuing} style={{ justifyContent: 'center', marginTop: 4 }}>
-              {issuing ? 'Executing on-chain transaction...' : '🪙 Mint Student Commitment'}
+            <div className="input-group-row">
+              <label>Student Registration ID</label>
+              <input className="glass-input-field" required value={sid} onChange={e => setSid(e.target.value)} />
+            </div>
+            <div className="input-group-row">
+              <label>Degree Course Title</label>
+              <input className="glass-input-field" required value={degree} onChange={e => setDegree(e.target.value)} />
+            </div>
+            <div className="inputs-split-row">
+              <div className="input-group-row" style={{ flex: 1 }}>
+                <label>Access Code</label>
+                <input className="glass-input-field" required value={code} onChange={e => setCode(e.target.value)} />
+              </div>
+              <div className="input-group-row" style={{ flex: 1 }}>
+                <label>GPA</label>
+                <input className="glass-input-field" required value={gpa} onChange={e => setGpa(e.target.value)} />
+              </div>
+            </div>
+            <button type="submit" className="primary-action-btn-neon" disabled={issuing} style={{ marginTop: 12 }}>
+              {issuing ? 'Publishing On-Chain State...' : '🪙 Publish Credential Commitment'}
             </button>
           </form>
 
           {result && (
-            <div style={{ marginTop: 12, padding: 12, background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 12 }}>
-              <span className="label">Published On-Chain Commitment Hash:</span>
-              <div className="code-block" style={{ fontSize: '0.74rem' }}>{result}</div>
+            <div className="commitment-hash-result-box" style={{ marginTop: 18 }}>
+              <span className="hash-label">State Commitment Hash:</span>
+              <code>{result}</code>
             </div>
           )}
         </div>
 
-        <div className="card">
-          <h4 style={{ fontSize: '1rem', marginBottom: 12, color: 'var(--rose)' }}>🚫 Active Revocation Registry</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="glass-card">
+          <h3 className="card-title" style={{ color: 'var(--rose)' }}>🚫 Active Revocation registry</h3>
+          <p className="card-desc" style={{ marginBottom: 16 }}>Revoking a student commitment invalidates their ZK proof generation locally and on-chain.</p>
+          
+          <div className="revocation-items-list">
             {students.map((st, idx) => (
-              <div key={idx} className="flex-row" style={{ padding: 10, background: 'rgba(0,0,0,0.2)', borderRadius: 8, justifycontent: 'space-between', border: '1px solid rgba(255,255,255,0.02)' }}>
+              <div key={idx} className="revocation-item-row">
                 <div>
-                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>{st.name}</strong>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>ID: {st.id}</span>
+                  <strong>{st.name}</strong>
+                  <span>ID: {st.id} • GPA: {st.gpa}</span>
                 </div>
                 {st.revoked ? (
-                  <span className="badge badge-red">Revoked</span>
+                  <span className="revocation-badge-x active">Revoked</span>
                 ) : (
-                  <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--rose)', color: 'var(--rose)' }} onClick={() => onRevoke(st.id)}>
-                    Revoke
-                  </button>
+                  <button className="revoke-action-btn" onClick={() => onRevoke(st.id)}>Revoke</button>
                 )}
               </div>
             ))}
@@ -512,22 +550,22 @@ function EmployerTab() {
   };
 
   return (
-    <div className="flex-col fade-in">
-      <div className="card">
-        <h4 style={{ fontSize: '1rem', marginBottom: 12 }}>💼 Verify Candidate Proof JSON</h4>
-        <form onSubmit={verifyProof} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <textarea rows={5} className="input" style={{ fontFamily: 'var(--font-code)', fontSize: '0.82rem' }} placeholder="Paste ZK Proof JSON here..." required value={input} onChange={e => setInput(e.target.value)} />
-          <button type="submit" className="btn btn-primary" disabled={verifying} style={{ justifyContent: 'center' }}>
-            {verifying ? 'Running ZK proof verification...' : '🔎 Verify ZK Proof'}
+    <div className="tab-view-container fade-in">
+      <div className="glass-card">
+        <h3 className="card-title">🔍 Academic ZK Proof Verifier</h3>
+        <p className="card-desc">Paste the student generated ZK proof JSON to verify commitment integrity.</p>
+        
+        <form onSubmit={verifyProof} className="form-column-inputs">
+          <textarea rows={6} className="glass-textarea-field" placeholder="Paste Proof JSON here..." required value={input} onChange={e => setInput(e.target.value)} />
+          <button type="submit" className="primary-action-btn-neon" disabled={verifying}>
+            {verifying ? 'Checking Verification Proof...' : '🔎 Run Cryptographic verification'}
           </button>
         </form>
 
         {result && (
-          <div style={{ marginTop: 14, padding: 14, borderRadius: 12, background: result.valid ? 'rgba(16,185,129,0.08)' : 'rgba(244,63,94,0.08)', border: `1px solid ${result.valid ? 'var(--mint)' : 'var(--rose)'}` }}>
-            <strong style={{ color: result.valid ? 'var(--mint)' : 'var(--rose)', display: 'block', marginBottom: 4 }}>
-              {result.valid ? '✅ VERIFIED & VALID' : '❌ VERIFICATION FAILED'}
-            </strong>
-            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>{result.text}</p>
+          <div className={`verification-outcome-box ${result.valid ? 'success' : 'failed'}`} style={{ marginTop: 20 }}>
+            <h4>{result.valid ? '✅ VERIFIED & VALID' : '❌ VERIFICATION FAILED'}</h4>
+            <p>{result.text}</p>
           </div>
         )}
       </div>
@@ -536,23 +574,26 @@ function EmployerTab() {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TAB 5: Explorer
+//  TAB 5: Ledger Explorer
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 function ExplorerTab({ activities }: { activities: Activity[] }) {
   return (
-    <div className="flex-col fade-in">
-      <div className="card">
-        <h4 style={{ fontSize: '1.05rem', marginBottom: 14 }}>⛓️ Recent Midnight Preprod Transactions</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="tab-view-container fade-in">
+      <div className="glass-card">
+        <h3 className="card-title">📊 Live Midnight Preprod Ledger Explorer</h3>
+        <p className="card-desc">Tracks real-time contract commitments and verification call parameters.</p>
+        
+        <div className="explorer-activities-table">
           {activities.map((tx, i) => (
-            <div key={i} className="flex-row" style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid var(--border)' }}>
-              <div>
-                <strong style={{ fontSize: '0.88rem' }}>{tx.type}</strong>
-                <span className="badge" style={{ marginLeft: 8, fontSize: '0.68rem' }}>{tx.circuit}</span>
+            <div key={i} className="explorer-row-item">
+              <div className="explorer-left-group">
+                <span className="explorer-badge">{tx.circuit}</span>
+                <span className="explorer-text">{tx.type}</span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Block {tx.block} • <span style={{ color: tx.status === 'SUCCESS' ? 'var(--mint)' : 'var(--rose)' }}>{tx.status}</span>
+              <div className="explorer-right-group">
+                <span className="explorer-block-num">Block #{tx.block}</span>
+                <span className={`explorer-status-dot ${tx.status.toLowerCase()}`}>{tx.status}</span>
               </div>
             </div>
           ))}
