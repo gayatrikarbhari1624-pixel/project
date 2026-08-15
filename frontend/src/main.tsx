@@ -72,27 +72,14 @@ function App() {
     console.log("Connecting directly to Lace Wallet DApp connector API...", provider);
 
     try {
-      // Race provider connection with a 1.5s timeout fallback to bypass extension hanging/crashes!
-      const connectionPromise = (async () => {
-        if (typeof provider.enable === 'function') {
-          return await provider.enable();
-        } else if (typeof provider.connect === 'function') {
-          return await provider.connect();
-        }
-        return provider;
-      })();
-
-      const timeoutPromise = new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            state: async () => ({ address: "mn_addr_preprod1h3ssm5ru2t6eqy4g3she78zlxn96e36ms6pq996aduvmateh9p9sk96u7s" }),
-            getChangeAddress: async () => "mn_addr_preprod1h3ssm5ru2t6eqy4g3she78zlxn96e36ms6pq996aduvmateh9p9sk96u7s",
-            isFallback: true
-          });
-        }, 1500);
-      });
-
-      const api = await Promise.race([connectionPromise, timeoutPromise]) as any;
+      let api;
+      if (typeof provider.enable === 'function') {
+        api = await provider.enable();
+      } else if (typeof provider.connect === 'function') {
+        api = await provider.connect();
+      } else {
+        api = provider;
+      }
 
       if (!api) {
         alert("Wallet connection cancelled kiva failed.");
