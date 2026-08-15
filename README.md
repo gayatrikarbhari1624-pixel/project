@@ -20,6 +20,16 @@
 
 ---
 
+## 🖥️ ZK Campus Vault Frontend UI Preview
+
+### Main Dashboard
+![ZK Campus Vault Main Dashboard](./screenshots/main_dashboard.png)
+
+### Student Credentials Vault
+![ZK Campus Vault Student Vault](./screenshots/student_vault.png)
+
+---
+
 ## 🔒 Observable Privacy Claim: "Proven Without Being Shown"
 
 ZK Campus Vault implements an observable privacy behavior using Midnight's native Zero-Knowledge Proof (Groth16) architecture:
