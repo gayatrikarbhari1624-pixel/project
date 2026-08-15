@@ -4,7 +4,7 @@ import './index.css';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  *  ZK Campus Vault — Privacy-Preserving Credentials & Identity Verification
- *  Theme: Ultra-Premium Space SaaS Dashboard with Custom Popup Confirmation
+ *  Theme: Ultra-Premium Space SaaS Dashboard (Lace Wallet Direct Sync)
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Student {
@@ -48,22 +48,24 @@ const DEPLOYED_CONTRACT = {
 function App() {
   const [tab, setTab] = useState<Tab>('guide');
   const [wallet, setWallet] = useState<string | null>(null);
-  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [activities, setActivities] = useState<Activity[]>(INITIAL_ACTIVITIES);
 
-  const executeLaceConnection = async () => {
+  const connectLaceWallet = async () => {
     // @ts-ignore
     const midnight = window.midnight || {};
     // @ts-ignore
     const cardano = window.cardano || {};
 
+    // Prioritize Lace preprod extensions
     const provider = cardano.lace || midnight.lace || cardano.mnLace || midnight.mnLace;
 
     if (!provider) {
       alert("Lace Wallet extension not detected! Please ensure you have Lace installed.");
       return;
     }
+
+    console.log("Connecting directly to Lace Wallet DApp connector API...", provider);
 
     try {
       let api;
@@ -185,7 +187,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={() => setShowConfirmModal(true)}>
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }} onClick={connectLaceWallet}>
               <span>👛</span>
               <strong>Connect Lace Wallet</strong>
             </button>
@@ -224,55 +226,6 @@ function App() {
           <strong>ZK Campus Vault</strong> • Built with Midnight.js SDK & Compact Cryptography Circuits • Preprod Integration Verified
         </footer>
       </div>
-
-      {/* Freighter/Lace Style Premium Confirmation Modal Popup */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-content fade-in" style={{ border: '1px solid var(--border-glow)', background: 'var(--bg-glass)', color: '#fff', borderRadius: '18px', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
-            {/* Modal Header */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(99, 102, 241, 0.05)' }}>
-              <div style={{ background: 'var(--primary)', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '1.2rem' }}>🔑</span>
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Connection Request</h3>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Lace DApp Connector API</span>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div style={{ padding: '24px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', marginBottom: 18, textAlign: 'center' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origin Request</span>
-                <strong style={{ fontSize: '0.88rem', color: 'var(--primary-light)', display: 'block', wordBreak: 'break-all' }}>https://zk-campus-vault-d2sw.vercel.app</strong>
-              </div>
-
-              <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>Requested Permissions:</h4>
-              <ul style={{ paddingLeft: '20px', fontSize: '0.84rem', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: 8, lineHeight: 1.4, marginBottom: 20 }}>
-                <li>Read your public preprod wallet address.</li>
-                <li>Request transaction signatures for zero-knowledge proving.</li>
-                <li>Query active smart contract state commitments.</li>
-              </ul>
-
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
-                <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '8px 16px', flex: 1, justifyContent: 'center' }} onClick={() => setShowConfirmModal(false)}>
-                  Reject
-                </button>
-                <button 
-                  className="btn btn-primary" 
-                  style={{ fontSize: '0.82rem', padding: '8px 16px', flex: 1, justifyContent: 'center' }} 
-                  onClick={() => {
-                    setShowConfirmModal(false);
-                    executeLaceConnection();
-                  }}
-                >
-                  Confirm Connect
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -506,7 +459,7 @@ function UniversityTab({ students, onMint, onRevoke }: UniversityTabProps) {
           <h4 style={{ fontSize: '1rem', marginBottom: 12, color: 'var(--rose)' }}>🚫 Active Revocation Registry</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {students.map((st, idx) => (
-              <div key={idx} className="flex-row" style={{ padding: 10, background: 'rgba(0,0,0,0.2)', borderRadius: 8, justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.02)' }}>
+              <div key={idx} className="flex-row" style={{ padding: 10, background: 'rgba(0,0,0,0.2)', borderRadius: 8, justifycontent: 'space-between', border: '1px solid rgba(255,255,255,0.02)' }}>
                 <div>
                   <strong style={{ fontSize: '0.85rem', display: 'block' }}>{st.name}</strong>
                   <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>ID: {st.id}</span>
@@ -586,7 +539,7 @@ function ExplorerTab({ activities }: { activities: Activity[] }) {
         <h4 style={{ fontSize: '1.05rem', marginBottom: 14 }}>⛓️ Recent Midnight Preprod Transactions</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {activities.map((tx, i) => (
-            <div key={i} className="flex-row" style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12, justifycontent: 'space-between', border: '1px solid var(--border)' }}>
+            <div key={i} className="flex-row" style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid var(--border)' }}>
               <div>
                 <strong style={{ fontSize: '0.88rem' }}>{tx.type}</strong>
                 <span className="badge" style={{ marginLeft: 8, fontSize: '0.68rem' }}>{tx.circuit}</span>
