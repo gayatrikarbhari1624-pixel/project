@@ -10,6 +10,7 @@
 | Requirement | Status | Details |
 |-------------|--------|---------|
 | **Live Demo URL** | 🌐 Live | [https://zk-campus-vault-d2sw.vercel.app](https://zk-campus-vault-d2sw.vercel.app) |
+| **Demo Video (Loom)** | 🎥 Recorded | [Watch Demo Video on Loom](https://www.loom.com/share/bfbe5151f608445e8b0f9d0fdfaf1367) |
 | **Lace Wallet Connect / Disconnect** | ✅ Implemented | Full DApp connector API integration (`window.midnight.mnLace` & `window.midnight.lace`). Direct popup trigger with loader and connection status indicator. |
 | **Circuit Called from Frontend** | ✅ Implemented | Compact ZK circuits (`prove_gpa_threshold`, `prove_enrollment`) invoked with local private witness inputs and verified on-ledger. |
 | **Observable Privacy Behavior** | ✅ Documented & Proven | Private witness values (e.g. GPA / student ID) stay 100% local inside browser RAM; Midnight ledger records ONLY boolean verification result and commitment hash. |
