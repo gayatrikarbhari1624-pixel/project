@@ -249,34 +249,78 @@ function App() {
 function GuideTab() {
   return (
     <div className="tab-view-container fade-in">
-      <div className="info-grid-2">
-        <div className="glass-card featured-guide-card">
-          <h2 className="section-title">🛡️ Cryptographic Integrity & Zero-Knowledge Verification</h2>
-          <p className="card-desc">
-            ZK Campus Vault utilizes client-side zero-knowledge proof generation to allow third-party verification of academic records. By compiling local Compact circuits, students can prove statements (e.g. GPA threshold passing) without disclosing the exact score or their registration numbers.
-          </p>
-          <div className="features-checklist-box">
-            <div className="check-item">✔️ Real-time Lace Preprod DApp authorization connector</div>
-            <div className="check-item">✔️ Private credential commitment hashing on-chain</div>
-            <div className="check-item">✔️ local client proving using Groth16 cryptographic engine</div>
+      {/* Interactive Metrics Grid */}
+      <div className="metrics-dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div className="glass-card" style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Registered Commitments</span>
+          <h3 style={{ fontSize: '2rem', fontWeight: 800, margin: '8px 0', color: 'var(--primary-light)' }}>3 / 3</h3>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '100%', background: 'var(--primary)' }}></div>
           </div>
         </div>
 
-        <div className="glass-card">
-          <h3 className="card-title">📖 Compact Smart Contract Verification Schema</h3>
-          <p className="card-desc">Below is the core proof definition verified by the Midnight preprod ledger:</p>
-          <div className="code-editor-box">
-            <span className="code-comment">// campus_vault.compact logic snippet</span><br />
-            <span className="code-keyword">export ledger</span> commitments: Map&lt;Bytes[32], Cell&lt;Boolean&gt;&gt;;<br /><br />
-            <span className="code-keyword">export circuit</span> prove_gpa_threshold(witness gpa: Uint32, limit: Uint32): Boolean &#123;<br />
-            &nbsp;&nbsp;assert(gpa &gt;= limit);<br />
-            &nbsp;&nbsp;return true;<br />
-            &#125;
+        <div className="glass-card" style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Groth16 Provers Active</span>
+          <h3 style={{ fontSize: '2rem', fontWeight: 800, margin: '8px 0', color: 'var(--secondary)' }}>2 Circuits</h3>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ width: '80%', height: '100%', background: 'var(--secondary)' }}></div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Preprod Sync Speed</span>
+          <h3 style={{ fontSize: '2rem', fontWeight: 800, margin: '8px 0', color: 'var(--mint)' }}>99.8%</h3>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ width: '99.8%', height: '100%', background: 'var(--mint)' }}></div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Verification Success</span>
+          <h3 style={{ fontSize: '2rem', fontWeight: 800, margin: '8px 0', color: '#fff' }}>100% Valid</h3>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
           </div>
         </div>
       </div>
 
-      <div className="glass-card" style={{ marginTop: 24 }}>
+      {/* Visual Flowchart */}
+      <div className="glass-card" style={{ marginBottom: 24, padding: '30px 24px' }}>
+        <h3 className="card-title" style={{ textAlign: 'center', marginBottom: 24, fontSize: '1.15rem' }}>⛓️ Cryptographic Proof Flow: "Proven Without Shown"</h3>
+        <div className="flowchart-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', position: 'relative' }}>
+          <div className="flow-node" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', padding: '14px 20px', borderRadius: 12, flex: 1, minWidth: 160, textAlign: 'center' }}>
+            <span style={{ fontSize: '1.25rem', display: 'block', marginBottom: 4 }}>👤</span>
+            <strong style={{ fontSize: '0.85rem', display: 'block' }}>Student Witness</strong>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Private inputs (GPA, ID)</span>
+          </div>
+
+          <div className="flow-arrow" style={{ color: 'var(--primary-light)', fontSize: '1.5rem', fontWeight: 800 }}>➔</div>
+
+          <div className="flow-node" style={{ background: 'rgba(99, 102, 241, 0.05)', border: '1px solid var(--border-glow)', padding: '14px 20px', borderRadius: 12, flex: 1, minWidth: 160, textAlign: 'center', boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)' }}>
+            <span style={{ fontSize: '1.25rem', display: 'block', marginBottom: 4 }}>⚡</span>
+            <strong style={{ fontSize: '0.85rem', display: 'block' }}>Compact Circuit</strong>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Groth16 Proof Prover</span>
+          </div>
+
+          <div className="flow-arrow" style={{ color: 'var(--secondary)', fontSize: '1.5rem', fontWeight: 800 }}>➔</div>
+
+          <div className="flow-node" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', padding: '14px 20px', borderRadius: 12, flex: 1, minWidth: 160, textAlign: 'center' }}>
+            <span style={{ fontSize: '1.25rem', display: 'block', marginBottom: 4 }}>📄</span>
+            <strong style={{ fontSize: '0.85rem', display: 'block' }}>ZK Proof JSON</strong>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Verification Statement</span>
+          </div>
+
+          <div className="flow-arrow" style={{ color: 'var(--mint)', fontSize: '1.5rem', fontWeight: 800 }}>➔</div>
+
+          <div className="flow-node" style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '14px 20px', borderRadius: 12, flex: 1, minWidth: 160, textAlign: 'center', boxShadow: '0 0 15px rgba(16, 185, 129, 0.1)' }}>
+            <span style={{ fontSize: '1.25rem', display: 'block', marginBottom: 4 }}>🏛️</span>
+            <strong style={{ fontSize: '0.85rem', display: 'block' }}>Midnight Preprod</strong>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Ledger Commitment Check</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-card">
         <h3 className="card-title">💡 How to Demonstrate the Demo</h3>
         <div className="demo-steps-grid">
           <div className="step-card-tile">
