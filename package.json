@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "ZK Campus Vault — Privacy-first student identity and certificate verification on Midnight Network",
-  "author": "",
+  "author": "Gayatri Karbhari",
   "license": "MIT",
   "scripts": {
     "compile": "compact compile contracts/campus_vault.compact contracts/managed/campus_vault",
