@@ -14,7 +14,7 @@
 | **Lace Wallet Connect / Disconnect** | ✅ Implemented | Full DApp connector API integration (`window.midnight.mnLace` & `window.midnight.lace`). Direct popup trigger with loader and connection status indicator. |
 | **Circuit Called from Frontend** | ✅ Implemented | Compact ZK circuits (`prove_gpa_threshold`, `prove_enrollment`) invoked with local private witness inputs and verified on-ledger. |
 | **Observable Privacy Behavior** | ✅ Documented & Proven | Private witness values (e.g. GPA / student ID) stay 100% local inside browser RAM; Midnight ledger records ONLY boolean verification result and commitment hash. |
-| **Deployed Preprod Contract** | ✅ Verified | **Preprod Address:** `8f3c411a09d7b42ef0192a8c7b6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e` (Exactly 64 hex characters/32-byte Midnight format). |
+| **Deployed Preprod Contract** | ✅ Verified | **Preprod Address:** `0x82f0731b0b4c5c81c44e0c14b21a2c1ee930a13109df422cf8b60bf954ee0c0b` (Exactly 64 hex characters/32-byte Midnight format). |
 | **Minimum 8 Commits** | ✅ 25+ Commits | Verified via `git log` history. |
 | **Public GitHub Repo & README** | ✅ Public | Complete documentation of privacy model, architecture, deployment, and testing. |
 
